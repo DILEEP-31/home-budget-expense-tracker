@@ -1,0 +1,40 @@
+<header class="topbar">
+    <div class="d-flex align-items-center gap-3">
+        <button class="mobile-toggle-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar" aria-label="Toggle navigation">
+            <i class="bi bi-list"></i>
+        </button>
+        <h5 class="mb-0 fw-semibold text-truncate">{% block page_title %}Dashboard{% endblock %}</h5>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <!-- Theme Dark / Light Mode Toggle Button -->
+        <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center rounded-circle" id="themeToggleBtn" type="button" aria-label="Toggle Dark Mode" title="Toggle Dark/Light Mode" style="width: 36px; height: 36px;">
+            <i class="bi bi-moon-stars" id="themeToggleIcon"></i>
+        </button>
+
+        {% if current_user_id %}
+            <span class="d-none d-md-inline-flex align-items-center gap-2 text-secondary small fw-medium">
+                <i class="bi bi-person-circle text-primary fs-5"></i>
+                <span>{{ current_user_name }}</span>
+            </span>
+            <a href="{{ url_for('main.add_transaction') }}" class="btn btn-sm btn-primary-custom d-flex align-items-center gap-1">
+                <i class="bi bi-plus-lg"></i>
+                <span class="d-none d-sm-inline">New Transaction</span>
+            </a>
+            <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" title="Log Out">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-sm-inline">Logout</span>
+                </button>
+            </form>
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-primary fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+            </a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary-custom fw-semibold">
+                <i class="bi bi-person-plus me-1"></i> Register
+            </a>
+        {% endif %}
+    </div>
+</header>

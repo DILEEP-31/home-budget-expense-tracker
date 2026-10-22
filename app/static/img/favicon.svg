@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="favGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#3730a3"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#favGrad)"/>
+  <!-- Wallet Body -->
+  <path d="M14 22C14 18.6863 16.6863 16 20 16H46C48.2091 16 50 17.7909 50 20V24H16C14.8954 24 14 23.1046 14 22Z" fill="#818cf8"/>
+  <rect x="14" y="22" width="36" height="26" rx="4" fill="#ffffff"/>
+  <!-- Wallet Flap & Coin -->
+  <path d="M38 31H48C49.1046 31 50 31.8954 50 33V39C50 40.1046 49.1046 41 48 41H38C36.8954 41 36 40.1046 36 39V33C36 31.8954 36.8954 31 38 31Z" fill="#4f46e5"/>
+  <circle cx="43" cy="36" r="2.5" fill="#10b981"/>
+</svg>

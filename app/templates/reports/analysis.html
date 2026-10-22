@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Analysis & Charts - Home Budget Tracker{% endblock %}
+{% block page_title %}Interactive Financial Analysis{% endblock %}
+
+{% block content %}
+<!-- Top Controls: Period Selection -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Financial Analytics & Insights</h4>
+        <p class="text-secondary small mb-0">Interactive visual trends powered by Chart.js and Pandas aggregations.</p>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('reports.analysis_page') }}" class="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm">
+        <i class="bi bi-calendar-event text-primary ms-1"></i>
+        <select name="month" class="form-select form-select-sm border-0 bg-transparent fw-medium" style="width: auto;" onchange="this.form.submit()">
+            {% for m in range(1, 13) %}
+            <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                Month {{ m }} ({{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] }})
+            </option>
+            {% endfor %}
+        </select>
+        <select name="year" class="form-select form-select-sm border-0 bg-transparent fw-medium" style="width: auto;" onchange="this.form.submit()">
+            {% for yr in available_years %}
+            <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>{{ yr }}</option>
+            {% endfor %}
+        </select>
+        <noscript>
+            <button class="btn btn-sm btn-primary-custom" type="submit">Apply</button>
+        </noscript>
+    </form>
+</div>
+
+<!-- Financial Insights Row -->
+<div class="row g-3 mb-4">
+    {% for ins in insights_data.insights %}
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 border-start border-4 border-{{ ins.color }}">
+            <div class="d-flex align-items-center gap-2 mb-1.5">
+                <i class="bi {{ ins.icon }} text-{{ ins.color }} fs-5"></i>
+                <h6 class="fw-bold mb-0 text-dark">{{ ins.title }}</h6>
+            </div>
+            <p class="small text-secondary mb-0">{{ ins.text }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Charts Grid -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Category Expense Breakdown (Doughnut) -->
+    <div class="col-lg-6">
+        <div class="chart-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Expense Distribution by Category</h6>
+                <span class="badge bg-light text-secondary border">Month {{ selected_month }}/{{ selected_year }}</span>
+            </div>
+            <div class="chart-container-wrapper" id="container-category-doughnut">
+                <div class="chart-loading">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="small text-secondary">Loading category breakdown...</span>
+                </div>
+                <div class="chart-empty d-none">
+                    <i class="bi bi-pie-chart text-muted fs-3 mb-1"></i>
+                    <span class="small text-secondary chart-empty-msg">No expense records found.</span>
+                </div>
+                <div class="chart-error d-none">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3 mb-1"></i>
+                    <span class="small text-danger chart-error-msg">Error loading chart data.</span>
+                </div>
+                <canvas id="categoryDoughnutChart" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Monthly Income vs Expense (Grouped Bar) -->
+    <div class="col-lg-6">
+        <div class="chart-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Monthly Income vs. Expense</h6>
+                <span class="badge bg-light text-secondary border">{{ selected_year }}</span>
+            </div>
+            <div class="chart-container-wrapper" id="container-monthly-bar">
+                <div class="chart-loading">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="small text-secondary">Loading annual comparison...</span>
+                </div>
+                <div class="chart-empty d-none">
+                    <i class="bi bi-bar-chart text-muted fs-3 mb-1"></i>
+                    <span class="small text-secondary chart-empty-msg">No records found for this year.</span>
+                </div>
+                <div class="chart-error d-none">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3 mb-1"></i>
+                    <span class="small text-danger chart-error-msg">Error loading monthly summary.</span>
+                </div>
+                <canvas id="monthlySummaryBarChart" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 3: Savings Trend (Line Chart) -->
+    <div class="col-lg-6">
+        <div class="chart-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Savings Trend & Cumulative Growth</h6>
+                <span class="badge bg-light text-secondary border">{{ selected_year }}</span>
+            </div>
+            <div class="chart-container-wrapper" id="container-savings-line">
+                <div class="chart-loading">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="small text-secondary">Loading savings progression...</span>
+                </div>
+                <div class="chart-empty d-none">
+                    <i class="bi bi-graph-up text-muted fs-3 mb-1"></i>
+                    <span class="small text-secondary chart-empty-msg">No savings trend available.</span>
+                </div>
+                <div class="chart-error d-none">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3 mb-1"></i>
+                    <span class="small text-danger chart-error-msg">Error loading savings trend.</span>
+                </div>
+                <canvas id="savingsTrendLineChart" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4: Budget Utilization (Horizontal Bar) -->
+    <div class="col-lg-6">
+        <div class="chart-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Budget Limit vs. Actual Spending</h6>
+                <span class="badge bg-light text-secondary border">Month {{ selected_month }}/{{ selected_year }}</span>
+            </div>
+            <div class="chart-container-wrapper" id="container-budget-bar">
+                <div class="chart-loading">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="small text-secondary">Loading budget utilization...</span>
+                </div>
+                <div class="chart-empty d-none">
+                    <i class="bi bi-bullseye text-muted fs-3 mb-1"></i>
+                    <span class="small text-secondary chart-empty-msg">No budget limits configured for this month.</span>
+                </div>
+                <div class="chart-error d-none">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3 mb-1"></i>
+                    <span class="small text-danger chart-error-msg">Error loading budget data.</span>
+                </div>
+                <canvas id="budgetUtilizationBarChart" style="max-height: 280px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation Actions -->
+<div class="d-flex justify-content-end gap-2 mb-4">
+    <a href="{{ url_for('reports.reports_index') }}" class="btn btn-outline-primary d-flex align-items-center gap-1.5">
+        <i class="bi bi-table"></i>
+        <span>View Tabular Statements & CSV</span>
+    </a>
+    <a href="{{ url_for('budgets.monthly_budgets', year=selected_year, month=selected_month) }}" class="btn btn-outline-secondary d-flex align-items-center gap-1.5">
+        <i class="bi bi-sliders"></i>
+        <span>Adjust Budgets</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const year = {{ selected_year }};
+    const month = {{ selected_month }};
+
+    // 1. Category Doughnut Chart
+    BudgetCharts.loadCategoryDoughnut(
+        'container-category-doughnut',
+        'categoryDoughnutChart',
+        `/api/charts/category-breakdown?year=${year}&month=${month}`
+    );
+
+    // 2. Monthly Summary Bar Chart
+    BudgetCharts.loadMonthlySummaryBar(
+        'container-monthly-bar',
+        'monthlySummaryBarChart',
+        `/api/charts/monthly-summary?year=${year}`
+    );
+
+    // 3. Savings Trend Line Chart
+    BudgetCharts.loadSavingsTrendLine(
+        'container-savings-line',
+        'savingsTrendLineChart',
+        `/api/charts/savings-trend?year=${year}`
+    );
+
+    // 4. Budget Utilization Horizontal Bar Chart
+    BudgetCharts.loadBudgetUtilizationBar(
+        'container-budget-bar',
+        'budgetUtilizationBarChart',
+        `/api/charts/budget-usage?year=${year}&month=${month}`
+    );
+});
+</script>
+{% endblock %}

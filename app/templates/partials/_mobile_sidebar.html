@@ -1,0 +1,76 @@
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+    <div class="offcanvas-header border-bottom">
+        <div class="d-flex align-items-center gap-2">
+            <div class="brand-icon" style="width: 34px; height: 34px; font-size: 1rem;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <h5 class="offcanvas-title fw-bold text-primary" id="mobileSidebarLabel">Home Budget</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-direction-column flex-column p-3">
+        <div class="sidebar-nav">
+            <a href="{{ url_for('main.home') }}" class="nav-link-custom {% if request.endpoint == 'main.home' %}active{% endif %}">
+                <i class="bi bi-house-door"></i>
+                <span>Home</span>
+            </a>
+            <a href="{{ url_for('main.dashboard') }}" class="nav-link-custom {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{{ url_for('main.transactions_list') }}" class="nav-link-custom {% if request.endpoint == 'main.transactions_list' %}active{% endif %}">
+                <i class="bi bi-receipt-cutoff"></i>
+                <span>Transactions</span>
+            </a>
+            <a href="{{ url_for('main.add_transaction') }}" class="nav-link-custom {% if request.endpoint == 'main.add_transaction' %}active{% endif %}">
+                <i class="bi bi-plus-circle"></i>
+                <span>Add Transaction</span>
+            </a>
+            <a href="{{ url_for('main.categories_list') }}" class="nav-link-custom {% if request.endpoint == 'main.categories_list' %}active{% endif %}">
+                <i class="bi bi-tags"></i>
+                <span>Categories</span>
+            </a>
+            <a href="{{ url_for('budgets.monthly_budgets') }}" class="nav-link-custom {% if request.blueprint == 'budgets' %}active{% endif %}">
+                <i class="bi bi-bullseye"></i>
+                <span>Budgets</span>
+            </a>
+            <a href="{{ url_for('reports.analysis_page') }}" class="nav-link-custom {% if request.endpoint == 'reports.analysis_page' %}active{% endif %}">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analysis</span>
+            </a>
+            <a href="{{ url_for('reports.reports_index') }}" class="nav-link-custom {% if request.endpoint == 'reports.reports_index' %}active{% endif %}">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+                <span>Reports</span>
+            </a>
+        </div>
+
+        <div class="mt-auto pt-3 border-top">
+            {% if current_user_id %}
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-weight: 600;">
+                        {{ (current_user_name[:2] if current_user_name else 'US')|upper }}
+                    </div>
+                    <div>
+                        <p class="mb-0 fw-semibold" style="font-size: 0.85rem;">{{ current_user_name }}</p>
+                        <small class="text-muted" style="font-size: 0.72rem;">{{ current_user_email }}</small>
+                    </div>
+                </div>
+                <form method="POST" action="{{ url_for('auth.logout') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-1 py-1">
+                        <i class="bi bi-box-arrow-right"></i> Log Out
+                    </button>
+                </form>
+            {% else %}
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-primary fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary-custom fw-semibold">
+                        <i class="bi bi-person-plus me-1"></i> Register
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

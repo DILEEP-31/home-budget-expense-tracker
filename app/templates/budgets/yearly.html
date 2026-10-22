@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Yearly Budget Summary {{ year }} - Home Budget Tracker{% endblock %}
+{% block page_title %}Annual Budget Overview{% endblock %}
+
+{% block content %}
+<!-- Top Header & Year Selector -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Annual Budget Analysis for {{ year }}</h4>
+        <p class="text-secondary small mb-0">Yearly breakdown of budget limits vs. actual expenditures</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <form method="GET" action="{{ url_for('budgets.yearly_summary') }}" class="d-flex align-items-center gap-2 bg-white p-1.5 px-2.5 rounded-3 border shadow-sm">
+            <i class="bi bi-calendar-range text-primary"></i>
+            <select name="year" class="form-select form-select-sm border-0 bg-transparent fw-medium" style="width: auto;" onchange="this.form.submit()">
+                {% for y in range(today_year - 2, today_year + 3) %}
+                    <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <a href="{{ url_for('budgets.monthly_budgets', year=year) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+            <i class="bi bi-arrow-left"></i> Monthly View
+        </a>
+    </div>
+</div>
+
+<!-- Annual Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">Total Annual Budget</span>
+                <div class="metric-icon-wrap icon-balance">
+                    <i class="bi bi-bullseye"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value text-primary">
+                    {{ currency_symbol }}{{ "{:,.2f}".format(summary.yearly_total_budget) }}
+                </div>
+                <small class="text-muted">Target spending for {{ year }}</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-4">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">Total Annual Expenses</span>
+                <div class="metric-icon-wrap icon-expense">
+                    <i class="bi bi-arrow-up-right"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value text-expense">
+                    {{ currency_symbol }}{{ "{:,.2f}".format(summary.yearly_total_spent) }}
+                </div>
+                <small class="text-muted">Actual total spent</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-4">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">Annual Budget Utilization</span>
+                <div class="metric-icon-wrap {{ 'icon-income' if summary.yearly_status.status == 'safe' else ('icon-savings' if summary.yearly_status.status == 'warning' else 'icon-expense') }}">
+                    <i class="bi bi-percent"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value {{ 'text-income' if summary.yearly_status.status == 'safe' else ('text-warning' if summary.yearly_status.status == 'warning' else 'text-danger') }}">
+                    {{ summary.yearly_status.percentage }}%
+                </div>
+                <small class="text-muted">Overall utilization status</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Month-by-Month Annual Breakdown -->
+<div class="custom-card mb-4 p-0 overflow-hidden">
+    <div class="p-3 border-bottom bg-light">
+        <h6 class="fw-bold mb-0">Month-by-Month Budget & Spending for {{ year }}</h6>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table custom-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th class="text-end">Budget Limit</th>
+                    <th class="text-end">Actual Spent</th>
+                    <th class="text-end">Difference</th>
+                    <th style="width: 25%;">Utilization</th>
+                    <th class="text-center" style="width: 120px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in summary.months %}
+                    <tr>
+                        <td class="fw-semibold">
+                            <a href="{{ url_for('budgets.monthly_budgets', year=year, month=m.month_num) }}" class="text-decoration-none text-primary">
+                                {{ m.month_name }}
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            {% if m.budget > 0 %}
+                                {{ currency_symbol }}{{ "{:,.2f}".format(m.budget) }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold text-expense">
+                            {{ currency_symbol }}{{ "{:,.2f}".format(m.spent) }}
+                        </td>
+                        <td class="text-end">
+                            {% if m.budget > 0 %}
+                                {% set diff = m.budget - m.spent %}
+                                <span class="{% if diff >= 0 %}text-success{% else %}text-danger{% endif %} fw-semibold">
+                                    {{ currency_symbol }}{{ "{:,.2f}".format(diff) }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if m.budget > 0 %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 6px;">
+                                        <div class="progress-bar {{ m.progress_class }}" 
+                                             role="progressbar" 
+                                             style="width: {{ [m.percentage, 100]|min }}%;" 
+                                             aria-valuenow="{{ m.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                    <small class="text-secondary" style="min-width: 45px;">{{ m.percentage }}%</small>
+                                </div>
+                            {% else %}
+                                <small class="text-muted">No limit set</small>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {{ m.badge_class }} rounded-pill small">
+                                {% if m.status == 'exceeded' %}
+                                    Exceeded
+                                {% elif m.status == 'warning' %}
+                                    Warning
+                                {% elif m.status == 'safe' %}
+                                    Safe
+                                {% else %}
+                                    No Limit
+                                {% endif %}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Category-Wise Annual Totals -->
+<div class="custom-card mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div>
+            <h6 class="fw-bold mb-1">Category-Wise Annual Breakdown</h6>
+            <small class="text-secondary">Total planned vs. actual spent per category across all 12 months</small>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        {% for cat in summary.categories %}
+            <div class="col-md-6 col-xl-4">
+                <div class="p-3 rounded-4 border bg-white h-100 d-flex flex-column justify-content-between shadow-xs">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="metric-icon-wrap" style="width: 34px; height: 34px; background-color: {{ cat.color }}1A; color: {{ cat.color }};">
+                                    <i class="bi {{ cat.icon }}"></i>
+                                </div>
+                                <h6 class="mb-0 fw-bold">{{ cat.category_name }}</h6>
+                            </div>
+                            <span class="badge {{ cat.badge_class }} rounded-pill small">
+                                {% if cat.status == 'exceeded' %}
+                                    Exceeded
+                                {% elif cat.status == 'warning' %}
+                                    Warning
+                                {% elif cat.status == 'safe' %}
+                                    Safe
+                                {% else %}
+                                    No Limit
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        {% if cat.yearly_budget > 0 %}
+                            <div class="progress my-2" style="height: 6px;">
+                                <div class="progress-bar {{ cat.progress_class }}" 
+                                     role="progressbar" 
+                                     style="width: {{ [cat.percentage, 100]|min }}%;" 
+                                     aria-valuenow="{{ cat.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-secondary">
+                                <span>Spent: <strong>{{ currency_symbol }}{{ "{:,.2f}".format(cat.yearly_spent) }}</strong></span>
+                                <span>Budget: <strong>{{ currency_symbol }}{{ "{:,.2f}".format(cat.yearly_budget) }}</strong></span>
+                            </div>
+                        {% else %}
+                            <div class="py-1 small text-muted">
+                                Total Spent: <strong>{{ currency_symbol }}{{ "{:,.2f}".format(cat.yearly_spent) }}</strong> (No limit set)
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

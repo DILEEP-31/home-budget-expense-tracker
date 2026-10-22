@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden - Access Denied{% endblock %}
+{% block page_title %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-8 col-lg-6 text-center">
+        <div class="custom-card p-5 shadow-sm">
+            <div class="empty-state-icon text-danger mb-3" style="width: 72px; height: 72px; font-size: 2rem; margin: 0 auto;">
+                <i class="bi bi-shield-slash"></i>
+            </div>
+            <h2 class="fw-bold text-dark mb-2">403 — Access Forbidden</h2>
+            <p class="text-secondary mb-4">
+                You do not have permission to access or modify this record.
+                To protect user privacy, financial data is strictly isolated to its respective owner.
+            </p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary-custom px-4">
+                    <i class="bi bi-speedometer2 me-1"></i> Return to Dashboard
+                </a>
+                <a href="{{ url_for('main.transactions_list') }}" class="btn btn-outline-secondary px-4">
+                    <i class="bi bi-receipt me-1"></i> My Transactions
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

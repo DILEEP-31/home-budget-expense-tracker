@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Add Transaction - Home Budget Tracker{% endblock %}
+{% block page_title %}Record Transaction{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <div class="custom-card">
+            <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <div>
+                    <h5 class="fw-bold mb-1">New Financial Entry</h5>
+                    <p class="text-secondary small mb-0">Record incoming salary/funds or household expenses</p>
+                </div>
+                <a href="{{ url_for('main.transactions_list') }}" class="btn btn-sm btn-outline-secondary rounded-2">
+                    <i class="bi bi-arrow-left me-1"></i>Back to List
+                </a>
+            </div>
+
+            <form method="POST" action="{{ url_for('main.add_transaction') }}" novalidate id="transactionForm">
+                <!-- CSRF Token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                <!-- Transaction Type Toggle -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small text-uppercase text-secondary">Transaction Type <span class="text-danger">*</span></label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="transaction_type" id="type_expense" value="expense" {% if form.transaction_type == 'expense' %}checked{% endif %} onchange="filterCategories('expense')">
+                            <label class="btn btn-outline-danger w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold" for="type_expense">
+                                <i class="bi bi-arrow-up-right-circle"></i> Expense
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="transaction_type" id="type_income" value="income" {% if form.transaction_type == 'income' %}checked{% endif %} onchange="filterCategories('income')">
+                            <label class="btn btn-outline-success w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold" for="type_income">
+                                <i class="bi bi-arrow-down-left-circle"></i> Income
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- Amount Input -->
+                    <div class="col-md-6 mb-3">
+                        <label for="amount" class="form-label fw-semibold small text-uppercase text-secondary">Amount <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-secondary fw-bold">₹</span>
+                            <input type="number" step="0.01" min="0.01" max="9999999.99" class="form-control" id="amount" name="amount" value="{{ form.amount }}" placeholder="0.00" required>
+                        </div>
+                        <div class="form-text small">Max 9,999,999.99 with up to 2 decimal places.</div>
+                    </div>
+
+                    <!-- Category Dropdown (Filtered dynamically by chosen transaction type) -->
+                    <div class="col-md-6 mb-3">
+                        <label for="category_id" class="form-label fw-semibold small text-uppercase text-secondary">Category <span class="text-danger">*</span></label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="" disabled {% if not form.category_id %}selected{% endif %}>Select Category...</option>
+                            
+                            <!-- Expense Categories -->
+                            {% for cat in expense_cats %}
+                                <option value="{{ cat.category_id }}" class="cat-option cat-expense" {% if form.category_id|string == cat.category_id|string %}selected{% endif %}>
+                                    {{ cat.category_name }}
+                                </option>
+                            {% endfor %}
+
+                            <!-- Income Categories -->
+                            {% for cat in income_cats %}
+                                <option value="{{ cat.category_id }}" class="cat-option cat-income" {% if form.category_id|string == cat.category_id|string %}selected{% endif %}>
+                                    {{ cat.category_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text small">Shows categories matching the selected type.</div>
+                    </div>
+
+                    <!-- Transaction Date -->
+                    <div class="col-md-6 mb-3">
+                        <label for="transaction_date" class="form-label fw-semibold small text-uppercase text-secondary">Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="transaction_date" name="transaction_date" value="{{ form.transaction_date }}" max="{{ today_date }}" required>
+                        <div class="form-text small">Dates cannot be in the future.</div>
+                    </div>
+
+                    <!-- Description / Notes -->
+                    <div class="col-md-6 mb-3">
+                        <label for="description" class="form-label fw-semibold small text-uppercase text-secondary">Description / Note</label>
+                        <input type="text" class="form-control" id="description" name="description" value="{{ form.description }}" placeholder="e.g. Weekly supermarket shopping" maxlength="255">
+                        <div class="form-text small">Optional note (max 255 chars).</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                    <a href="{{ url_for('main.transactions_list') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4">
+                        <i class="bi bi-check-lg me-1"></i>Save Transaction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Client-side category dropdown filter matching chosen transaction type
+    function filterCategories(type) {
+        const select = document.getElementById('category_id');
+        const expenseOptions = document.querySelectorAll('.cat-expense');
+        const incomeOptions = document.querySelectorAll('.cat-income');
+        
+        let firstMatch = null;
+        if (type === 'expense') {
+            expenseOptions.forEach(opt => { opt.style.display = ''; if(!firstMatch) firstMatch = opt; });
+            incomeOptions.forEach(opt => { opt.style.display = 'none'; if(opt.selected) select.value = ''; });
+        } else {
+            incomeOptions.forEach(opt => { opt.style.display = ''; if(!firstMatch) firstMatch = opt; });
+            expenseOptions.forEach(opt => { opt.style.display = 'none'; if(opt.selected) select.value = ''; });
+        }
+    }
+
+    // Run on initial page load to reflect current radio state
+    document.addEventListener('DOMContentLoaded', () => {
+        const initialType = document.querySelector('input[name="transaction_type"]:checked').value;
+        filterCategories(initialType);
+    });
+</script>
+{% endblock %}

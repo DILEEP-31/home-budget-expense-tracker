@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Log In - Home Budget Tracker{% endblock %}
+{% block page_title %}Account Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-5 col-xl-4">
+        <div class="custom-card shadow-sm p-4">
+            <div class="text-center mb-4">
+                <div class="brand-icon mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <h4 class="fw-bold mb-1">Welcome Back</h4>
+                <p class="text-secondary small mb-0">Sign in to manage your household budget</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                <!-- CSRF Token -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="next" value="{{ next }}"/>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label fw-semibold small text-uppercase text-secondary">Email Address <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ email }}" placeholder="name@example.com" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label fw-semibold small text-uppercase text-secondary">Password <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary-custom py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div class="p-3 bg-light rounded-3 border mt-4 text-center small text-secondary">
+                <i class="bi bi-info-circle text-primary me-1"></i><strong>Demo Credentials:</strong><br>
+                <code>demo@example.com</code> &bull; <code>Demo@1234</code>
+            </div>
+
+            <div class="text-center mt-3 pt-3 border-top small text-secondary">
+                Don't have an account? 
+                <a href="{{ url_for('auth.register') }}" class="fw-semibold text-primary text-decoration-none">Create Account</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

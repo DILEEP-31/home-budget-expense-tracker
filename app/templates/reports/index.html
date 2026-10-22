@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Reports - Home Budget Tracker{% endblock %}
+{% block page_title %}Financial Reports & Statements{% endblock %}
+
+{% block content %}
+<!-- Print-Only Header -->
+<div class="print-only-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h3 class="mb-0 fw-bold">Home Budget — Financial Statement</h3>
+            <p class="text-muted small mb-0">Prepared for: {{ current_user_name }} ({{ current_user_email }})</p>
+        </div>
+        <div class="text-end">
+            <p class="small mb-0">Generated On: {{ today.strftime('%d %B %Y') }}</p>
+            <span class="badge bg-dark">Official Statement</span>
+        </div>
+    </div>
+</div>
+
+<!-- Header Controls (Hidden on Print) -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 no-print">
+    <div>
+        <h4 class="fw-bold mb-1">Financial Reports & Statements</h4>
+        <p class="text-secondary small mb-0">Structured date-wise, category-wise, and annual performance tables.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-outline-secondary d-flex align-items-center gap-2 shadow-sm">
+            <i class="bi bi-printer"></i>
+            <span>Print / Save PDF</span>
+        </button>
+        <a href="{{ url_for('reports.analysis_page') }}" class="btn btn-primary-custom d-flex align-items-center gap-2 shadow-sm">
+            <i class="bi bi-graph-up-arrow"></i>
+            <span>Interactive Analysis</span>
+        </a>
+    </div>
+</div>
+
+<!-- Navigation Tabs (Hidden on Print) -->
+<div class="custom-card p-2 mb-4 no-print">
+    <ul class="nav nav-pills nav-fill gap-2" id="reportTabs" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link py-2.5 fw-medium {% if active_tab == 'datewise' %}active{% endif %}" 
+               href="{{ url_for('reports.reports_index', tab='datewise', start_date=start_date, end_date=end_date) }}">
+                <i class="bi bi-calendar-range me-2"></i>Date-Wise Daily Summary
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link py-2.5 fw-medium {% if active_tab == 'category' %}active{% endif %}" 
+               href="{{ url_for('reports.reports_index', tab='category', year=selected_year, month=selected_month) }}">
+                <i class="bi bi-pie-chart me-2"></i>Category-Wise Breakdown
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link py-2.5 fw-medium {% if active_tab == 'monthly' %}active{% endif %}" 
+               href="{{ url_for('reports.reports_index', tab='monthly', year=selected_year) }}">
+                <i class="bi bi-calendar3 me-2"></i>12-Month Annual Summary
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- ========================================== -->
+<!-- TAB 1: DATE-WISE DAILY REPORT              -->
+<!-- ========================================== -->
+{% if active_tab == 'datewise' %}
+<div class="custom-card mb-4">
+    <!-- Filter Bar (Hidden on Print) -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-3 border-bottom mb-4 no-print">
+        <form method="GET" action="{{ url_for('reports.reports_index') }}" class="d-flex flex-wrap align-items-center gap-2">
+            <input type="hidden" name="tab" value="datewise">
+            <label class="small text-secondary fw-semibold">Date Range:</label>
+            <input type="date" name="start_date" value="{{ start_date }}" class="form-control form-control-sm" style="width: auto;" required>
+            <span class="text-muted">to</span>
+            <input type="date" name="end_date" value="{{ end_date }}" class="form-control form-control-sm" style="width: auto;" required>
+            <button type="submit" class="btn btn-sm btn-primary-custom px-3">Filter</button>
+        </form>
+
+        <a href="{{ url_for('reports.export_daily_csv', start_date=start_date, end_date=end_date) }}" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1.5">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Export CSV</span>
+        </a>
+    </div>
+
+    <!-- Summary Metrics for Date Range -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 bg-success-subtle border border-success-subtle text-success">
+                <small class="text-uppercase fw-semibold" style="font-size: 0.72rem;">Period Total Income</small>
+                <h4 class="fw-bold mb-0 mt-1">₹{{ "{:,.2f}".format(daily_data.total_income) }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 bg-danger-subtle border border-danger-subtle text-danger">
+                <small class="text-uppercase fw-semibold" style="font-size: 0.72rem;">Period Total Expense</small>
+                <h4 class="fw-bold mb-0 mt-1">₹{{ "{:,.2f}".format(daily_data.total_expense) }}</h4>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded-3 bg-primary-subtle border border-primary-subtle text-primary">
+                <small class="text-uppercase fw-semibold" style="font-size: 0.72rem;">Period Net Savings</small>
+                <h4 class="fw-bold mb-0 mt-1">₹{{ "{:,.2f}".format(daily_data.net_savings) }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily Table -->
+    {% if daily_data.rows %}
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col" class="text-end">Income</th>
+                    <th scope="col" class="text-end">Expense</th>
+                    <th scope="col" class="text-end">Net Daily Savings</th>
+                    <th scope="col" class="text-center">Transactions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in daily_data.rows %}
+                <tr>
+                    <td class="fw-medium">
+                        <i class="bi bi-calendar-day text-secondary me-1.5"></i>
+                        {{ row.date }}
+                    </td>
+                    <td class="text-end text-success fw-medium">
+                        {% if row.income > 0 %}+₹{{ "{:,.2f}".format(row.income) }}{% else %}—{% endif %}
+                    </td>
+                    <td class="text-end text-danger fw-medium">
+                        {% if row.expense > 0 %}-₹{{ "{:,.2f}".format(row.expense) }}{% else %}—{% endif %}
+                    </td>
+                    <td class="text-end fw-bold {% if row.savings >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                        ₹{{ "{:,.2f}".format(row.savings) }}
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-light text-secondary border px-2 py-1">{{ row.count }} txns</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light fw-bold border-top-2">
+                <tr>
+                    <td>Total ({{ daily_data.rows|length }} active days)</td>
+                    <td class="text-end text-success">+₹{{ "{:,.2f}".format(daily_data.total_income) }}</td>
+                    <td class="text-end text-danger">-₹{{ "{:,.2f}".format(daily_data.total_expense) }}</td>
+                    <td class="text-end {% if daily_data.net_savings >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                        ₹{{ "{:,.2f}".format(daily_data.net_savings) }}
+                    </td>
+                    <td class="text-center">
+                        {{ daily_data.rows|sum(attribute='count') }} total txns
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state py-5 text-center">
+        <div class="empty-state-icon mb-3">
+            <i class="bi bi-calendar-x"></i>
+        </div>
+        <h6 class="fw-bold text-dark">No records found for this date range</h6>
+        <p class="text-secondary small mb-3">Try widening your date filter parameters above.</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ========================================== -->
+<!-- TAB 2: CATEGORY-WISE BREAKDOWN REPORT      -->
+<!-- ========================================== -->
+{% if active_tab == 'category' %}
+<div class="custom-card mb-4">
+    <!-- Filter Bar (Hidden on Print) -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-3 border-bottom mb-4 no-print">
+        <form method="GET" action="{{ url_for('reports.reports_index') }}" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="tab" value="category">
+            <label class="small text-secondary fw-semibold">Period:</label>
+            <select name="month" class="form-select form-select-sm" style="width: auto;">
+                {% for m in range(1, 13) %}
+                <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>
+                    Month {{ m }} ({{ ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] }})
+                </option>
+                {% endfor %}
+            </select>
+            <select name="year" class="form-select form-select-sm" style="width: auto;">
+                {% for yr in available_years %}
+                <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>{{ yr }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary-custom px-3">Filter</button>
+        </form>
+
+        <a href="{{ url_for('reports.export_category_csv', year=selected_year, month=selected_month) }}" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1.5">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Export CSV</span>
+        </a>
+    </div>
+
+    <!-- Category Visual & Table -->
+    <div class="row g-4 align-items-center">
+        <!-- Matplotlib PNG Chart Preview -->
+        <div class="col-lg-5 text-center">
+            <div class="p-2 border rounded-3 bg-light">
+                <img src="{{ cat_chart_b64 }}" alt="Matplotlib Expense Distribution Chart" class="img-fluid rounded" style="max-height: 340px;">
+                <small class="d-block text-muted mt-2" style="font-size: 0.75rem;">
+                    <i class="bi bi-file-image me-1"></i>Server-side Matplotlib Agg Chart
+                </small>
+            </div>
+        </div>
+
+        <!-- Category Table -->
+        <div class="col-lg-7">
+            {% if category_data.has_data %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">Category</th>
+                            <th scope="col" class="text-end">Total Amount</th>
+                            <th scope="col" class="text-end">Percentage</th>
+                            <th scope="col" class="text-center">Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in range(category_data.labels|length) %}
+                        <tr>
+                            <td>
+                                <span class="d-inline-flex align-items-center gap-2 fw-medium">
+                                    <span class="rounded-circle d-inline-block" style="width: 12px; height: 12px; background-color: {{ category_data.colors[i] }};"></span>
+                                    {{ category_data.labels[i] }}
+                                </span>
+                            </td>
+                            <td class="text-end fw-semibold text-danger">
+                                ₹{{ "{:,.2f}".format(category_data.data[i]) }}
+                            </td>
+                            <td class="text-end">
+                                <span class="badge bg-light text-dark border">{{ category_data.percentages[i] }}%</span>
+                            </td>
+                            <td class="text-center text-secondary small">
+                                {{ category_data.counts[i] }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light fw-bold border-top-2">
+                        <tr>
+                            <td>Total Expenses</td>
+                            <td class="text-end text-danger">₹{{ "{:,.2f}".format(category_data.total_expense) }}</td>
+                            <td class="text-end">100.0%</td>
+                            <td class="text-center">{{ category_data.counts|sum }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state py-5 text-center">
+                <div class="empty-state-icon mb-3">
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+                <h6 class="fw-bold text-dark">No expense records found</h6>
+                <p class="text-secondary small mb-0">No expenses recorded for Month {{ selected_month }}/{{ selected_year }}.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- ========================================== -->
+<!-- TAB 3: 12-MONTH ANNUAL REPORT              -->
+<!-- ========================================== -->
+{% if active_tab == 'monthly' %}
+<div class="custom-card mb-4">
+    <!-- Filter Bar (Hidden on Print) -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pb-3 border-bottom mb-4 no-print">
+        <form method="GET" action="{{ url_for('reports.reports_index') }}" class="d-flex align-items-center gap-2">
+            <input type="hidden" name="tab" value="monthly">
+            <label class="small text-secondary fw-semibold">Year:</label>
+            <select name="year" class="form-select form-select-sm" style="width: auto;">
+                {% for yr in available_years %}
+                <option value="{{ yr }}" {% if yr == selected_year %}selected{% endif %}>{{ yr }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary-custom px-3">Filter</button>
+        </form>
+
+        <a href="{{ url_for('reports.export_monthly_csv', year=selected_year) }}" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1.5">
+            <i class="bi bi-file-earmark-spreadsheet"></i>
+            <span>Export CSV</span>
+        </a>
+    </div>
+
+    <!-- Annual Matplotlib Grouped Bar Chart Preview -->
+    <div class="p-2 border rounded-3 bg-light mb-4 text-center">
+        <img src="{{ monthly_chart_b64 }}" alt="Matplotlib Monthly Income vs Expense Chart" class="img-fluid rounded" style="max-height: 300px; width: 100%; object-fit: contain;">
+        <small class="d-block text-muted mt-2" style="font-size: 0.75rem;">
+            <i class="bi bi-bar-chart-line me-1"></i>Server-side Matplotlib Agg Monthly Comparison
+        </small>
+    </div>
+
+    <!-- 12-Month Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Month</th>
+                    <th scope="col" class="text-end">Income</th>
+                    <th scope="col" class="text-end">Expense</th>
+                    <th scope="col" class="text-end">Net Savings</th>
+                    <th scope="col" class="text-end">Savings Rate</th>
+                    <th scope="col" class="text-center">Transactions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in monthly_data.monthly_rows %}
+                <tr>
+                    <td class="fw-semibold">
+                        {{ r.month_name }} {{ selected_year }}
+                    </td>
+                    <td class="text-end text-success fw-medium">
+                        {% if r.income > 0 %}+₹{{ "{:,.2f}".format(r.income) }}{% else %}—{% endif %}
+                    </td>
+                    <td class="text-end text-danger fw-medium">
+                        {% if r.expense > 0 %}-₹{{ "{:,.2f}".format(r.expense) }}{% else %}—{% endif %}
+                    </td>
+                    <td class="text-end fw-bold {% if r.savings >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                        ₹{{ "{:,.2f}".format(r.savings) }}
+                    </td>
+                    <td class="text-end">
+                        <span class="badge {% if r.savings_rate >= 30 %}bg-success-subtle text-success border border-success-subtle{% elif r.savings_rate >= 10 %}bg-primary-subtle text-primary border border-primary-subtle{% elif r.savings_rate < 0 %}bg-danger-subtle text-danger border border-danger-subtle{% else %}bg-light text-secondary border{% endif %}">
+                            {{ r.savings_rate }}%
+                        </span>
+                    </td>
+                    <td class="text-center text-secondary small">
+                        {{ r.transaction_count }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light fw-bold border-top-2">
+                <tr>
+                    <td>Annual Total ({{ selected_year }})</td>
+                    <td class="text-end text-success">+₹{{ "{:,.2f}".format(monthly_data.total_income) }}</td>
+                    <td class="text-end text-danger">-₹{{ "{:,.2f}".format(monthly_data.total_expense) }}</td>
+                    <td class="text-end {% if monthly_data.total_savings >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                        ₹{{ "{:,.2f}".format(monthly_data.total_savings) }}
+                    </td>
+                    <td class="text-end text-primary">
+                        {{ monthly_data.overall_savings_rate }}% overall
+                    </td>
+                    <td class="text-center">
+                        {{ monthly_data.monthly_rows|sum(attribute='transaction_count') }} total
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

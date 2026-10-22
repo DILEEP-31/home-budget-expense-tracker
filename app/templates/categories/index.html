@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Categories - Home Budget Tracker{% endblock %}
+{% block page_title %}Expense & Income Categories{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="fw-bold mb-1">Standard Financial Categories</h5>
+            <p class="text-secondary small mb-0">Predefined system categories retrieved live from MySQL</p>
+        </div>
+    </div>
+
+    <!-- Expense Categories Card -->
+    <div class="custom-card mb-4">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <span class="badge bg-danger-subtle text-danger px-2.5 py-1.5 rounded-pill fw-semibold">
+                <i class="bi bi-arrow-up-right me-1"></i>Expense Categories ({{ expense_cats|length }})
+            </span>
+            <small class="text-muted">Used to classify all outgoing household expenditures</small>
+        </div>
+
+        <div class="row g-3">
+            {% for cat in expense_cats %}
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                    <div class="p-3 rounded-3 border bg-light d-flex align-items-center gap-3 h-100">
+                        <div class="metric-icon-wrap" style="background-color: {{ cat.color }}1A; color: {{ cat.color }};">
+                            <i class="bi {{ cat.icon }}"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-semibold">{{ cat.category_name }}</h6>
+                            <small class="text-muted text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ cat.category_type }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Income Categories Card -->
+    <div class="custom-card">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+            <span class="badge bg-success-subtle text-success px-2.5 py-1.5 rounded-pill fw-semibold">
+                <i class="bi bi-arrow-down-left me-1"></i>Income Categories ({{ income_cats|length }})
+            </span>
+            <small class="text-muted">Used to classify incoming salary, investments, and funds</small>
+        </div>
+
+        <div class="row g-3">
+            {% for cat in income_cats %}
+                <div class="col-sm-6 col-md-4 col-xl-3">
+                    <div class="p-3 rounded-3 border bg-light d-flex align-items-center gap-3 h-100">
+                        <div class="metric-icon-wrap" style="background-color: {{ cat.color }}1A; color: {{ cat.color }};">
+                            <i class="bi {{ cat.icon }}"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-semibold">{{ cat.category_name }}</h6>
+                            <small class="text-muted text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ cat.category_type }}</small>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

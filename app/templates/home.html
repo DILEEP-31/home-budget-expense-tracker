@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Home Budget Tracker{% endblock %}
+{% block page_title %}Overview & Welcome{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="custom-card mb-4 border-0 p-4 p-md-5" style="background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%); color: #FFFFFF;">
+    <div class="row align-items-center">
+        <div class="col-lg-8">
+            <span class="badge bg-white text-primary mb-3 px-3 py-2 fw-semibold rounded-pill">
+                <i class="bi bi-stars me-1"></i> Personal Finance Made Simple
+            </span>
+            <h1 class="display-6 fw-bold mb-3 text-white">Take Control of Your Household Finances</h1>
+            <p class="lead opacity-90 mb-4" style="font-size: 1.05rem; line-height: 1.6;">
+                Record household income, log daily expenses, monitor your monthly savings, and build healthy financial habits with intelligent analysis.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                {% if current_user_id %}
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg px-4 py-2 fw-semibold text-primary rounded-3 shadow-sm">
+                        <i class="bi bi-speedometer2 me-2"></i>Open Dashboard
+                    </a>
+                    <a href="{{ url_for('main.add_transaction') }}" class="btn btn-outline-light btn-lg px-4 py-2 fw-semibold rounded-3">
+                        <i class="bi bi-plus-circle me-2"></i>Add Transaction
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-light btn-lg px-4 py-2 fw-semibold text-primary rounded-3 shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Dashboard
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg px-4 py-2 fw-semibold rounded-3">
+                        <i class="bi bi-person-plus me-2"></i>Create Free Account
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-4 d-none d-lg-block text-center">
+            <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                <i class="bi bi-pie-chart-fill" style="font-size: 6rem; opacity: 0.9;"></i>
+                <h5 class="mt-3 mb-1 text-white">Smart Tracking</h5>
+                <p class="mb-0 text-white-50" style="font-size: 0.85rem;">MySQL Powered Financial Management</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Features Section -->
+<div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h4 class="fw-bold mb-1">Key Application Features</h4>
+            <p class="text-secondary small mb-0">Designed for intuitive household income and expense management</p>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-6 col-xl-3">
+            <div class="custom-card h-100">
+                <div class="metric-icon-wrap icon-income mb-3">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Income & Expense Logs</h6>
+                <p class="text-secondary small mb-0">Quickly record daily expenditures and multiple income streams with server-side validation.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="custom-card h-100">
+                <div class="metric-icon-wrap icon-savings mb-3">
+                    <i class="bi bi-pie-chart"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Category Organization</h6>
+                <p class="text-secondary small mb-0">Organized with 15 predefined expense and income categories, each with distinct color indicators.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="custom-card h-100">
+                <div class="metric-icon-wrap icon-balance mb-3">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Monthly Metrics</h6>
+                <p class="text-secondary small mb-0">Real-time calculations for total income, spending totals, net monthly savings, and all-time balance.</p>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="custom-card h-100">
+                <div class="metric-icon-wrap mb-3" style="background-color: var(--warning-subtle); color: var(--warning-amber);">
+                    <i class="bi bi-shield-lock"></i>
+                </div>
+                <h6 class="fw-bold mb-2">Secure MySQL Storage</h6>
+                <p class="text-secondary small mb-0">Reliable relational database persistence with strict constraints, indexes, and transactional rollbacks.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="custom-card mb-4">
+    <h4 class="fw-bold mb-4">How It Works in 3 Simple Steps</h4>
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="p-3">
+                <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 52px; height: 52px; font-weight: 700; font-size: 1.25rem;">
+                    1
+                </div>
+                <h6 class="fw-bold">Log Your Transactions</h6>
+                <p class="text-secondary small mb-0">Input your income deposits and daily spending under specific categories with amounts and dates.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3">
+                <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 52px; height: 52px; font-weight: 700; font-size: 1.25rem;">
+                    2
+                </div>
+                <h6 class="fw-bold">Inspect Dashboard Summary</h6>
+                <p class="text-secondary small mb-0">View instant monthly savings, income-to-expense totals, and top-spending category progress bars.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3">
+                <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 52px; height: 52px; font-weight: 700; font-size: 1.25rem;">
+                    3
+                </div>
+                <h6 class="fw-bold">Manage & Optimize</h6>
+                <p class="text-secondary small mb-0">Audit history, remove errant records, and prepare for monthly budget limits arriving in Week 2.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

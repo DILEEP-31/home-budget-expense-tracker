@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Home Budget Tracker{% endblock %}
+{% block page_title %}Financial Dashboard{% endblock %}
+
+{% block content %}
+<!-- Top Controls: Month & Year Selector -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Financial Summary</h4>
+        <p class="text-secondary small mb-0">Overview for <strong>{{ month_name }}</strong></p>
+    </div>
+
+    <!-- Live Month Selector Form -->
+    <form method="GET" action="{{ url_for('main.dashboard') }}" class="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm">
+        <i class="bi bi-calendar3 text-primary ms-1"></i>
+        <select name="month_year" class="form-select form-select-sm border-0 bg-transparent fw-medium" style="width: auto; cursor: pointer;" onchange="this.form.submit()">
+            {% for yr, mo in available_months %}
+                {% set date_str = yr ~ '-' ~ ('%02d' % mo) ~ '-01' %}
+                <option value="{{ yr }}-{{ mo }}" {% if yr == selected_year and mo == selected_month %}selected{% endif %}>
+                    {{ ('%02d' % mo) }}/{{ yr }}
+                </option>
+            {% endfor %}
+        </select>
+        <noscript>
+            <button class="btn btn-sm btn-primary-custom" type="submit">Filter</button>
+        </noscript>
+    </form>
+</div>
+
+<!-- Overspending Alert Banner on Dashboard -->
+{% if budget_overview and budget_overview.alerts %}
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 p-3.5">
+        <div class="d-flex align-items-start gap-3">
+            <div class="fs-4 text-danger mt-0.5">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <h6 class="fw-bold mb-0 text-danger">Budget Limit Alert ({{ month_name }})</h6>
+                    <a href="{{ url_for('budgets.monthly_budgets', year=selected_year, month=selected_month) }}" class="small text-danger fw-semibold text-decoration-none">
+                        Manage Budgets &rarr;
+                    </a>
+                </div>
+                <p class="small text-danger-emphasis mb-2">
+                    {{ budget_data.alerts|length if budget_data else budget_overview.alerts|length }} category{{ ' has' if (budget_overview.alerts|length == 1) else 'ies have' }} reached warning or exceeded limits:
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for item in budget_overview.alerts %}
+                        <span class="badge {{ item.badge_class }} border px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1.5">
+                            <i class="bi {{ item.icon }}"></i>
+                            <strong>{{ item.category_name }}</strong>: 
+                            {{ item.percentage }}% used 
+                            {% if item.status == 'exceeded' %}
+                                (Over by {{ currency_symbol }}{{ "{:,.2f}".format(item.over_amount) }})
+                            {% else %}
+                                (Warning: {{ currency_symbol }}{{ "{:,.2f}".format(item.remaining) }} left)
+                            {% endif %}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Financial Insights Bar -->
+{% if insights_data and insights_data.insights %}
+<div class="row g-3 mb-4">
+    {% for ins in insights_data.insights %}
+    <div class="col-md-4">
+        <div class="custom-card p-3 h-100 border-start border-4 border-{{ ins.color }} shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi {{ ins.icon }} text-{{ ins.color }} fs-5"></i>
+                <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.88rem;">{{ ins.title }}</h6>
+            </div>
+            <p class="small text-secondary mb-0">{{ ins.text }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- 4 Summary Metric Cards (Calculated live from MySQL) -->
+<div class="row g-3 mb-4">
+    <!-- Total Income -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">Monthly Income</span>
+                <div class="metric-icon-wrap icon-income">
+                    <i class="bi bi-arrow-down-left"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value text-income">
+                    {{ summary.total_income|currency }}
+                </div>
+                <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ month_name }}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Expenses -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">Monthly Expenses</span>
+                <div class="metric-icon-wrap icon-expense">
+                    <i class="bi bi-arrow-up-right"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value text-expense">
+                    {{ summary.total_expenses|currency }}
+                </div>
+                <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ month_name }}</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Savings & Savings Rate -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">Monthly Savings</span>
+                <div class="metric-icon-wrap icon-savings">
+                    <i class="bi bi-piggy-bank"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value {% if summary.monthly_savings >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                    {{ summary.monthly_savings|currency }}
+                </div>
+                <small class="text-muted">
+                    Savings Rate: <strong>{{ "%.1f"|format(summary.savings_rate) }}%</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- All-Time Net Balance -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="custom-card metric-card">
+            <div class="metric-header">
+                <span class="metric-label">All-Time Balance</span>
+                <div class="metric-icon-wrap icon-balance">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+            </div>
+            <div>
+                <div class="metric-value text-primary">
+                    {{ summary.total_balance|currency }}
+                </div>
+                <small class="text-muted"><i class="bi bi-shield-check me-1"></i>All-time net balance</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Section: Top Spending Categories & Charts Placeholder -->
+<div class="row g-4 mb-4">
+    <!-- Top Spending Categories -->
+    <div class="col-lg-7">
+        <div class="custom-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Top Spending Categories</h6>
+                <span class="badge bg-light text-secondary border">{{ month_name }}</span>
+            </div>
+
+            {% if top_categories %}
+                <div class="d-flex flex-column gap-3 pt-1">
+                    {% for cat in top_categories %}
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="d-flex align-items-center gap-2 small fw-semibold">
+                                    <i class="bi {{ cat.icon }}" style="color: {{ cat.color }};"></i>
+                                    {{ cat.category_name }}
+                                </span>
+                                <span class="small text-secondary">
+                                    <strong>{{ currency_symbol }}{{ "{:,.2f}".format(cat.total) }}</strong>
+                                    <span class="text-muted ms-1">({{ cat.percentage }}%)</span>
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 7px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ cat.percentage }}%; background-color: {{ cat.color }};" 
+                                     aria-valuenow="{{ cat.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state py-4 text-center">
+                    <div class="empty-state-icon mb-2" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <p class="text-secondary small mb-1">No expense records found for {{ month_name }}.</p>
+                    <a href="{{ url_for('main.add_transaction') }}" class="btn btn-sm btn-outline-primary mt-2">
+                        <i class="bi bi-plus-lg me-1"></i>Add an Expense
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Charts Card & Monthly Budget Utilization Card -->
+    <div class="col-lg-5">
+        <div class="custom-card h-100 d-flex flex-column justify-content-between">
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">Monthly Budget Status</h6>
+                    <a href="{{ url_for('budgets.monthly_budgets', year=selected_year, month=selected_month) }}" class="small text-primary text-decoration-none fw-medium">
+                        Configure <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                {% if budget_overview and budget_overview.total_budget > 0 %}
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small text-secondary">Target Budget</span>
+                            <strong class="text-primary">{{ currency_symbol }}{{ "{:,.2f}".format(budget_overview.total_budget) }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="small text-secondary">Spent So Far</span>
+                            <strong class="text-expense">{{ currency_symbol }}{{ "{:,.2f}".format(budget_overview.total_spent) }}</strong>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar {{ 'bg-success' if budget_overview.total_status == 'safe' else ('bg-warning' if budget_overview.total_status == 'warning' else 'bg-danger') }}" 
+                                 role="progressbar" 
+                                 style="width: {{ [budget_overview.total_percentage, 100]|min }}%;" 
+                                 aria-valuenow="{{ budget_overview.total_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small">
+                            <span class="text-secondary">Overall Usage: <strong>{{ budget_overview.total_percentage }}%</strong></span>
+                            {% if budget_overview.total_remaining is not none and budget_overview.total_remaining >= 0 %}
+                                <span class="text-success fw-medium">{{ currency_symbol }}{{ "{:,.2f}".format(budget_overview.total_remaining) }} left</span>
+                            {% elif budget_overview.total_remaining is not none %}
+                                <span class="text-danger fw-bold">Over by {{ currency_symbol }}{{ "{:,.2f}".format(budget_overview.total_remaining|abs) }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="p-4 rounded-3 text-center bg-light border border-dashed my-2">
+                        <i class="bi bi-bullseye text-muted" style="font-size: 2.5rem;"></i>
+                        <h6 class="mt-2 text-secondary fw-semibold">No Monthly Limits Set</h6>
+                        <p class="text-muted small mb-3">
+                            Set budget limits for your expense categories to trigger automated overspending alerts.
+                        </p>
+                        <a href="{{ url_for('budgets.monthly_budgets', year=selected_year, month=selected_month) }}" class="btn btn-sm btn-outline-primary">
+                            Set Limits for {{ month_name }}
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="text-center pt-2">
+                <small class="text-muted"><i class="bi bi-shield-check me-1"></i>Real-time MySQL tracking</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Financial Charts Row -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Category Expense Breakdown (Doughnut) -->
+    <div class="col-lg-6">
+        <div class="chart-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Expense Distribution</h6>
+                <span class="badge bg-light text-secondary border">{{ month_name }}</span>
+            </div>
+            <div class="chart-container-wrapper" id="container-dash-cat">
+                <div class="chart-loading">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="small text-secondary">Loading expense distribution...</span>
+                </div>
+                <div class="chart-empty d-none">
+                    <i class="bi bi-pie-chart text-muted fs-3 mb-1"></i>
+                    <span class="small text-secondary chart-empty-msg">No expenses found for {{ month_name }}.</span>
+                </div>
+                <div class="chart-error d-none">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3 mb-1"></i>
+                    <span class="small text-danger chart-error-msg">Failed to load chart.</span>
+                </div>
+                <canvas id="dashCatChart" style="max-height: 260px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Monthly Comparison (Grouped Bar) -->
+    <div class="col-lg-6">
+        <div class="chart-card h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h6 class="fw-bold mb-0">Monthly Income vs. Expense</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-light text-secondary border">{{ selected_year }}</span>
+                    <a href="{{ url_for('reports.analysis_page', year=selected_year, month=selected_month) }}" class="small text-primary text-decoration-none fw-medium">
+                        More Charts &rarr;
+                    </a>
+                </div>
+            </div>
+            <div class="chart-container-wrapper" id="container-dash-bar">
+                <div class="chart-loading">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <span class="small text-secondary">Loading annual trend...</span>
+                </div>
+                <div class="chart-empty d-none">
+                    <i class="bi bi-bar-chart text-muted fs-3 mb-1"></i>
+                    <span class="small text-secondary chart-empty-msg">No transactions recorded for {{ selected_year }}.</span>
+                </div>
+                <div class="chart-error d-none">
+                    <i class="bi bi-exclamation-triangle text-danger fs-3 mb-1"></i>
+                    <span class="small text-danger chart-error-msg">Failed to load chart.</span>
+                </div>
+                <canvas id="dashBarChart" style="max-height: 260px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions Section -->
+<div class="custom-card">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h6 class="fw-bold mb-0">Recent Transactions</h6>
+            <small class="text-muted">Latest activity on your account</small>
+        </div>
+        <a href="{{ url_for('main.transactions_list') }}" class="btn btn-sm btn-outline-primary rounded-2">
+            View All Transactions
+        </a>
+    </div>
+
+    {% if recent_txs %}
+        <div class="table-responsive">
+            <table class="table custom-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in recent_txs %}
+                        <tr>
+                            <td><span class="text-secondary fw-medium">{{ tx.transaction_date|date }}</span></td>
+                            <td>
+                                <span class="badge-category" style="background-color: {{ tx.color }}1A; color: {{ tx.color }}; border: 1px solid {{ tx.color }}33;">
+                                    <i class="bi {{ tx.icon }}"></i> {{ tx.category_name }}
+                                </span>
+                            </td>
+                            <td>{{ tx.description or '—' }}</td>
+                            <td>
+                                {% if tx.transaction_type == 'income' %}
+                                    <span class="badge bg-success-subtle text-success">Income</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Expense</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold {% if tx.transaction_type == 'income' %}text-income{% else %}text-expense{% endif %}">
+                                {% if tx.transaction_type == 'income' %}+{% else %}-{% endif %}{{ tx.amount|currency }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state py-4 text-center">
+            <div class="empty-state-icon mb-2" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <p class="text-secondary small mb-1">No transactions recorded yet.</p>
+            <a href="{{ url_for('main.add_transaction') }}" class="btn btn-sm btn-primary-custom mt-2">
+                <i class="bi bi-plus-lg me-1"></i>Record First Transaction
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const year = {{ selected_year }};
+    const month = {{ selected_month }};
+
+    if (window.BudgetCharts) {
+        BudgetCharts.loadCategoryDoughnut(
+            'container-dash-cat',
+            'dashCatChart',
+            `/api/charts/category-breakdown?year=${year}&month=${month}`
+        );
+
+        BudgetCharts.loadMonthlySummaryBar(
+            'container-dash-bar',
+            'dashBarChart',
+            `/api/charts/monthly-summary?year=${year}`
+        );
+    }
+});
+</script>
+{% endblock %}

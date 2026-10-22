@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions - Home Budget Tracker{% endblock %}
+{% block page_title %}Transaction History{% endblock %}
+
+{% block content %}
+<!-- Top Header & Action -->
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+        <h4 class="fw-bold mb-1">Transaction History</h4>
+        <p class="text-secondary small mb-0">
+            {% if has_active_filters %}
+                Found <strong>{{ total_count }}</strong> matching record{{ 's' if total_count != 1 else '' }}
+            {% else %}
+                Total of <strong>{{ total_count }}</strong> recorded transaction{{ 's' if total_count != 1 else '' }}
+            {% endif %}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('main.export_transactions_csv', search=filters.search, type=filters.type, category_id=filters.category_id, date_from=filters.date_from, date_to=filters.date_to, min_amount=filters.min_amount, max_amount=filters.max_amount) }}" class="btn btn-outline-success d-flex align-items-center gap-1.5 shadow-sm">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+        </a>
+        <a href="{{ url_for('main.add_transaction') }}" class="btn btn-primary-custom d-flex align-items-center gap-2">
+            <i class="bi bi-plus-lg"></i> Add Transaction
+        </a>
+    </div>
+</div>
+
+<!-- Responsive Filter & Search Bar -->
+<div class="custom-card mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="fw-semibold small text-uppercase text-secondary">
+            <i class="bi bi-funnel me-1"></i> Filter & Search Records
+        </span>
+        <button class="btn btn-sm btn-link text-decoration-none d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+            <i class="bi bi-sliders"></i> Toggle Filters
+        </button>
+    </div>
+
+    <div class="collapse d-lg-block" id="filterCollapse">
+        <form method="GET" action="{{ url_for('main.transactions_list') }}" class="pt-2">
+            <!-- Retain current sort and order if set -->
+            <input type="hidden" name="sort_by" value="{{ filters.sort_by }}">
+            <input type="hidden" name="sort_order" value="{{ filters.sort_order }}">
+
+            <div class="row g-2 mb-3">
+                <!-- Search description -->
+                <div class="col-md-4">
+                    <label class="form-label small text-secondary fw-medium mb-1">Search Description</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" name="search" value="{{ filters.search }}" placeholder="Keyword or note...">
+                    </div>
+                </div>
+
+                <!-- Transaction Type -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label small text-secondary fw-medium mb-1">Type</label>
+                    <select class="form-select form-select-sm" name="type">
+                        <option value="">All Types</option>
+                        <option value="expense" {% if filters.type == 'expense' %}selected{% endif %}>Expense</option>
+                        <option value="income" {% if filters.type == 'income' %}selected{% endif %}>Income</option>
+                    </select>
+                </div>
+
+                <!-- Category -->
+                <div class="col-6 col-md-3">
+                    <label class="form-label small text-secondary fw-medium mb-1">Category</label>
+                    <select class="form-select form-select-sm" name="category_id">
+                        <option value="">All Categories</option>
+                        {% for cat in all_categories %}
+                            <option value="{{ cat.category_id }}" {% if filters.category_id|string == cat.category_id|string %}selected{% endif %}>
+                                {{ cat.category_name }} ({{ cat.category_type }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date Range: From & To -->
+                <div class="col-6 col-md-1.5 col-lg-1.5">
+                    <label class="form-label small text-secondary fw-medium mb-1">From Date</label>
+                    <input type="date" class="form-control form-control-sm" name="date_from" value="{{ filters.date_from }}">
+                </div>
+                <div class="col-6 col-md-1.5 col-lg-1.5">
+                    <label class="form-label small text-secondary fw-medium mb-1">To Date</label>
+                    <input type="date" class="form-control form-control-sm" name="date_to" value="{{ filters.date_to }}">
+                </div>
+            </div>
+
+            <div class="row g-2 align-items-center">
+                <!-- Min / Max Amount -->
+                <div class="col-6 col-md-2">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-secondary">Min ₹</span>
+                        <input type="number" step="0.01" class="form-control" name="min_amount" value="{{ filters.min_amount }}" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light text-secondary">Max ₹</span>
+                        <input type="number" step="0.01" class="form-control" name="max_amount" value="{{ filters.max_amount }}" placeholder="Max">
+                    </div>
+                </div>
+
+                <!-- Submit & Clear Buttons -->
+                <div class="col-12 col-md-8 d-flex justify-content-md-end gap-2 mt-2 mt-md-0">
+                    {% if has_active_filters %}
+                        <a href="{{ url_for('main.transactions_list') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                            <i class="bi bi-x-circle"></i> Clear Filters
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-sm btn-primary-custom d-flex align-items-center gap-1">
+                        <i class="bi bi-funnel-fill"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table Container -->
+<div class="custom-card mb-4 p-0 overflow-hidden">
+    {% if transactions %}
+        <!-- Desktop / Tablet Table View (>= 768px) -->
+        <div class="d-none d-md-block table-responsive">
+            <table class="table custom-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <!-- Sortable: Date -->
+                        <th>
+                            {% set next_order = 'asc' if filters.sort_by == 'date' and filters.sort_order == 'desc' else 'desc' %}
+                            <a href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by='date', sort_order=next_order, page=1) }}" class="text-decoration-none text-secondary d-inline-flex align-items-center gap-1">
+                                Date 
+                                {% if filters.sort_by == 'date' %}
+                                    <i class="bi bi-arrow-{{ 'up' if filters.sort_order == 'asc' else 'down' }} text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up text-muted opacity-50"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <!-- Sortable: Category -->
+                        <th>
+                            {% set next_order = 'asc' if filters.sort_by == 'category' and filters.sort_order == 'desc' else 'desc' %}
+                            <a href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by='category', sort_order=next_order, page=1) }}" class="text-decoration-none text-secondary d-inline-flex align-items-center gap-1">
+                                Category
+                                {% if filters.sort_by == 'category' %}
+                                    <i class="bi bi-arrow-{{ 'up' if filters.sort_order == 'asc' else 'down' }} text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up text-muted opacity-50"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <th>Description</th>
+                        
+                        <!-- Sortable: Type -->
+                        <th>
+                            {% set next_order = 'asc' if filters.sort_by == 'type' and filters.sort_order == 'desc' else 'desc' %}
+                            <a href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by='type', sort_order=next_order, page=1) }}" class="text-decoration-none text-secondary d-inline-flex align-items-center gap-1">
+                                Type
+                                {% if filters.sort_by == 'type' %}
+                                    <i class="bi bi-arrow-{{ 'up' if filters.sort_order == 'asc' else 'down' }} text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up text-muted opacity-50"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+
+                        <!-- Sortable: Amount -->
+                        <th class="text-end">
+                            {% set next_order = 'asc' if filters.sort_by == 'amount' and filters.sort_order == 'desc' else 'desc' %}
+                            <a href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by='amount', sort_order=next_order, page=1) }}" class="text-decoration-none text-secondary d-inline-flex align-items-center gap-1">
+                                Amount
+                                {% if filters.sort_by == 'amount' %}
+                                    <i class="bi bi-arrow-{{ 'up' if filters.sort_order == 'asc' else 'down' }} text-primary"></i>
+                                {% else %}
+                                    <i class="bi bi-arrow-down-up text-muted opacity-50"></i>
+                                {% endif %}
+                            </a>
+                        </th>
+                        <th class="text-center" style="width: 120px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in transactions %}
+                        <tr>
+                            <td><span class="text-secondary fw-medium">{{ tx.transaction_date|date }}</span></td>
+                            <td>
+                                <span class="badge-category" style="background-color: {{ tx.color }}1A; color: {{ tx.color }}; border: 1px solid {{ tx.color }}33;">
+                                    <i class="bi {{ tx.icon }}"></i> {{ tx.category_name }}
+                                </span>
+                            </td>
+                            <td>{{ tx.description or '—' }}</td>
+                            <td>
+                                {% if tx.transaction_type == 'income' %}
+                                    <span class="badge bg-success-subtle text-success">Income</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger">Expense</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold {% if tx.transaction_type == 'income' %}text-income{% else %}text-expense{% endif %}">
+                                {% if tx.transaction_type == 'income' %}+{% else %}-{% endif %}{{ tx.amount|currency }}
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-outline-primary" title="Edit Transaction" aria-label="Edit Transaction">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#deleteModal" 
+                                            data-tx-id="{{ tx.transaction_id }}"
+                                            data-tx-desc="{{ tx.description or tx.category_name }}"
+                                            data-tx-amount="{{ tx.amount|currency }}"
+                                            title="Delete Transaction"
+                                            aria-label="Delete Transaction">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Stacked Cards View (< 768px) -->
+        <div class="d-md-none p-3 d-flex flex-column gap-3">
+            {% for tx in transactions %}
+                <div class="card border rounded-3 p-3 shadow-none bg-body">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge-category" style="background-color: {{ tx.color }}1A; color: {{ tx.color }}; border: 1px solid {{ tx.color }}33;">
+                            <i class="bi {{ tx.icon }}"></i> {{ tx.category_name }}
+                        </span>
+                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ tx.transaction_date|date }}</small>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div>
+                            <p class="mb-0 fw-semibold text-dark">{{ tx.description or 'No description' }}</p>
+                            <span class="badge {{ 'bg-success-subtle text-success' if tx.transaction_type == 'income' else 'bg-danger-subtle text-danger' }} border" style="font-size: 0.72rem;">
+                                {{ tx.transaction_type|capitalize }}
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <span class="fs-5 fw-bold {{ 'text-success' if tx.transaction_type == 'income' else 'text-danger' }}">
+                                {{ '+' if tx.transaction_type == 'income' else '-' }}{{ tx.amount|currency }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 pt-2 border-top">
+                        <a href="{{ url_for('main.edit_transaction', transaction_id=tx.transaction_id) }}" class="btn btn-sm btn-outline-primary flex-fill d-flex align-items-center justify-content-center gap-1" style="min-height: 44px;">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger flex-fill d-flex align-items-center justify-content-center gap-1" 
+                                style="min-height: 44px;"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#deleteModal" 
+                                data-tx-id="{{ tx.transaction_id }}"
+                                data-tx-desc="{{ tx.description or tx.category_name }}"
+                                data-tx-amount="{{ tx.amount|currency }}">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light">
+            <span class="small text-secondary mb-2 mb-sm-0">
+                Page <strong>{{ current_page }}</strong> of <strong>{{ total_pages }}</strong> (Showing 10 per page)
+            </span>
+
+            {% if total_pages > 1 %}
+                <nav aria-label="Transactions navigation">
+                    <ul class="pagination pagination-sm mb-0">
+                        <!-- Prev Page -->
+                        <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by=filters.sort_by, sort_order=filters.sort_order, page=current_page - 1) }}">
+                                &laquo; Prev
+                            </a>
+                        </li>
+
+                        <!-- Page Numbers -->
+                        {% for p in range(1, total_pages + 1) %}
+                            {% if p == current_page or (p >= current_page - 2 and p <= current_page + 2) %}
+                                <li class="page-item {% if p == current_page %}active{% endif %}">
+                                    <a class="page-link" href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by=filters.sort_by, sort_order=filters.sort_order, page=p) }}">
+                                        {{ p }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Next Page -->
+                        <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('main.transactions_list', date_from=filters.date_from, date_to=filters.date_to, type=filters.type, category_id=filters.category_id, min_amount=filters.min_amount, max_amount=filters.max_amount, search=filters.search, sort_by=filters.sort_by, sort_order=filters.sort_order, page=current_page + 1) }}">
+                                Next &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+
+    {% elif has_active_filters %}
+        <!-- Empty State 1: No Results Match Active Filters -->
+        <div class="empty-state py-5 text-center p-4">
+            <div class="empty-state-icon mb-3" style="width: 64px; height: 64px; font-size: 1.75rem; background-color: var(--warning-subtle); color: var(--warning-amber);">
+                <i class="bi bi-funnel"></i>
+            </div>
+            <h5 class="fw-bold mb-2">No Matching Transactions</h5>
+            <p class="text-secondary small mb-3">No financial records match your current filter and search criteria.</p>
+            <a href="{{ url_for('main.transactions_list') }}" class="btn btn-sm btn-primary-custom px-3">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset All Filters
+            </a>
+        </div>
+
+    {% else %}
+        <!-- Empty State 2: Completely Empty History -->
+        <div class="empty-state py-5 text-center p-4">
+            <div class="empty-state-icon mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <h5 class="fw-bold mb-2">No Transactions Yet</h5>
+            <p class="text-secondary small mb-4">Start managing your household budget by recording your first income or expense.</p>
+            <a href="{{ url_for('main.add_transaction') }}" class="btn btn-primary-custom px-4">
+                <i class="bi bi-plus-lg me-1"></i>Add Your First Transaction
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Dynamic Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle me-1"></i> Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-3">
+                <p class="mb-2 text-secondary">
+                    Are you sure you want to permanently delete this transaction record?
+                </p>
+                <div class="p-3 bg-light rounded-3 border">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong id="modalTxDesc" class="text-primary">—</strong>
+                        <span id="modalTxAmount" class="fw-bold">—</span>
+                    </div>
+                </div>
+                <small class="text-danger d-block mt-2">
+                    <i class="bi bi-info-circle me-1"></i>This action deletes the record from MySQL and cannot be reversed.
+                </small>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger px-4">Delete Record</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const txId = button.getAttribute('data-tx-id');
+            const txDesc = button.getAttribute('data-tx-desc');
+            const txAmount = button.getAttribute('data-tx-amount');
+
+            document.getElementById('modalTxDesc').textContent = txDesc;
+            document.getElementById('modalTxAmount').textContent = txAmount;
+            
+            const form = document.getElementById('deleteForm');
+            form.action = `/transactions/${txId}/delete`;
+        });
+    }
+</script>
+{% endblock %}

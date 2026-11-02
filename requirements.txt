@@ -31,6 +31,9 @@ packaging==26.3
 cffi==2.1.1
 pycparser==3.11
 
+# Production Server
+gunicorn>=21.2.0
+
 # Testing
 pytest==9.1.1
 iniconfig==2.3.1

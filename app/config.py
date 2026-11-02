@@ -18,7 +18,8 @@ class Config:
     # Session Security
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+    # Automatically enable Secure cookies in production (Render uses HTTPS by default)
+    SESSION_COOKIE_SECURE = os.environ.get('RENDER', '').lower() == 'true' or os.environ.get('FLASK_ENV') == 'production'
 
     # MySQL Database Settings
     DB_HOST = os.environ.get('DB_HOST', 'localhost')
@@ -26,6 +27,12 @@ class Config:
     DB_NAME = os.environ.get('DB_NAME', 'home_budget_db')
     DB_USER = os.environ.get('DB_USER', 'budget_user')
     DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
+
+    # Database Mode: If USE_SQLITE is true or when running on Render without cloud MySQL
+    USE_SQLITE = os.environ.get('USE_SQLITE', '').lower() == 'true' or (
+        os.environ.get('RENDER', '').lower() == 'true' and os.environ.get('DB_HOST') in (None, '', 'localhost')
+    )
+    SQLITE_DB_PATH = os.environ.get('SQLITE_DB_PATH', os.path.join(os.path.dirname(os.path.dirname(__file__)), 'home_budget.db'))
 
     # Localization
     CURRENCY_SYMBOL = os.environ.get('CURRENCY_SYMBOL', '₹')

@@ -137,3 +137,10 @@ def validate_budget_amount(amount_raw):
         return False, None, "Budget limit cannot have more than 2 decimal places."
 
     return True, val, None
+
+
+def get_spending_status(income, expenses):
+    """Alias to analytics.get_spending_status."""
+    from app.services.analytics import get_spending_status as gss
+    return gss(income, expenses)
+

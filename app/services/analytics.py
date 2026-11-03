@@ -567,3 +567,54 @@ def get_analytics_insights(user_id, year=None, month=None):
         'category_data': cat_data,
         'month_summary': curr_month_row
     }
+
+
+def get_spending_status(income, expenses):
+    """
+    Evaluates monthly spending relative to income:
+    - safe: expenses <= 50% of income (no banner, normal cards)
+    - warning: expenses > 50% and <= 100% of income (amber banner, amber card)
+    - danger: expenses > income (red banner, red cards)
+    - no_income: income <= 0 (no banner, no error)
+    
+    Returns a dictionary with status, percentage, capped percentage, and over amount.
+    """
+    from decimal import Decimal
+    try:
+        inc = Decimal(str(income or 0))
+    except Exception:
+        inc = Decimal('0.00')
+
+    try:
+        exp = Decimal(str(expenses or 0))
+    except Exception:
+        exp = Decimal('0.00')
+
+    if inc <= Decimal('0'):
+        status = 'no_income'
+        pct = 0.0
+        over = Decimal('0.00')
+    else:
+        pct = float((exp / inc) * 100)
+        if exp > inc:
+            status = 'danger'
+            over = exp - inc
+        elif exp > (inc * Decimal('0.5')):
+            status = 'warning'
+            over = Decimal('0.00')
+        else:
+            status = 'safe'
+            over = Decimal('0.00')
+
+    pct_rounded = round(pct, 1)
+    capped_pct = min(pct_rounded, 100.0)
+
+    return {
+        'status': status,
+        'percentage': pct_rounded,
+        'capped_percentage': capped_pct,
+        'over_amount': over,
+        'income': inc,
+        'expenses': exp
+    }
+

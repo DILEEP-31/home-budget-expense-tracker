@@ -5,7 +5,7 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="custom-card mb-4 border-0 p-4 p-md-5" style="background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%); color: #FFFFFF;">
+<div id="home" class="custom-card mb-4 border-0 p-4 p-md-5" style="background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%); color: #FFFFFF;">
     <div class="row align-items-center">
         <div class="col-lg-8">
             <span class="badge bg-white text-primary mb-3 px-3 py-2 fw-semibold rounded-pill">
@@ -42,6 +42,15 @@
         </div>
     </div>
 </div>
+
+<!-- 1. About The Project Partial -->
+{% include "partials/_about.html" %}
+
+<!-- 2. Features Section (What this website offers) Partial -->
+{% include "partials/_features.html" %}
+
+<!-- 3. Advantages Section (Why use Home Budget) Partial -->
+{% include "partials/_advantages.html" %}
 
 <!-- Key Features Section -->
 <div class="mb-4">
@@ -124,4 +133,7 @@
         </div>
     </div>
 </div>
+
+<!-- 4. Contact Us Section Partial -->
+{% include "partials/_contact.html" %}
 {% endblock %}

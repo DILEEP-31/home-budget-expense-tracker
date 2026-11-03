@@ -18,6 +18,8 @@
     --expense-subtle: #FEF2F2;
     --warning-amber: #F59E0B;       /* Caution / Pending */
     --warning-subtle: #FFFBEB;
+    --warning: var(--warning-amber);
+    --danger: var(--expense-red);
 
     /* Neutrals & Surfaces */
     --bg-main: #F8FAFC;            /* Clean light grey backdrop */
@@ -38,6 +40,11 @@
 }
 
 /* Base Document Styles */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--topbar-height) + 1.25rem);
+}
+
 html, body {
     overflow-x: hidden;
     width: 100%;
@@ -547,4 +554,388 @@ h1, h2, h3, h4, h5, h6 {
 
 .print-only-header {
     display: none;
+}
+
+/* ==========================================================================
+   Public Home Page Enhancements (Landing Sections, Features, Advantages, Contact)
+   ========================================================================== */
+
+/* Section Headings with Short Colored Underline */
+.section-title {
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.25rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 48px;
+    height: 3.5px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--accent-teal) 100%);
+    border-radius: 4px;
+}
+
+/* Soft Tinted Background Bands */
+.section-band-tinted {
+    background: linear-gradient(135deg, rgba(238, 242, 255, 0.6) 0%, rgba(240, 253, 250, 0.4) 100%);
+    border: 1px solid var(--border-color);
+}
+
+[data-bs-theme="dark"] .section-band-tinted {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.7) 100%);
+    border-color: var(--border-color);
+}
+
+/* Landing Section Spacing */
+.landing-section {
+    scroll-margin-top: calc(var(--topbar-height) + 1.25rem);
+}
+
+/* Feature & Advantage Cards Hover Lift */
+.feature-card,
+.advantage-card {
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    border-radius: var(--card-radius);
+}
+
+.feature-card:hover,
+.advantage-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(79, 70, 229, 0.3);
+}
+
+/* Card Icons inside Tinted Circles */
+.card-icon-circle {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+/* About The Project Component */
+.about-stats-card {
+    background-color: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+.about-icon-pill {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* Contact Us Card & Avatar */
+.contact-card {
+    border-radius: var(--card-radius);
+    background-color: var(--bg-card);
+}
+
+.contact-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-teal) 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    box-shadow: 0 6px 18px rgba(79, 70, 229, 0.3);
+}
+
+.contact-item-row {
+    background-color: var(--bg-main);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-speed) ease;
+}
+
+[data-bs-theme="dark"] .contact-item-row {
+    background-color: rgba(15, 23, 42, 0.5);
+    border-color: var(--border-color);
+}
+
+.contact-item-row:hover {
+    border-color: var(--primary-color);
+    background-color: var(--primary-subtle);
+}
+
+[data-bs-theme="dark"] .contact-item-row:hover {
+    background-color: rgba(79, 70, 229, 0.15);
+}
+
+.contact-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-teal));
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.contact-item-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.contact-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color var(--transition-speed) ease;
+}
+
+.contact-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Home Topbar In-Page Anchor Navigation */
+.home-nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 8px;
+    transition: all var(--transition-speed) ease;
+}
+
+.home-nav-link:hover {
+    color: var(--primary-color);
+    background-color: var(--primary-subtle);
+}
+
+.home-nav-link.active {
+    color: var(--primary-color);
+    background-color: var(--primary-subtle);
+    font-weight: 600;
+}
+
+[data-bs-theme="dark"] .home-nav-link.active,
+[data-bs-theme="dark"] .home-nav-link:hover {
+    background-color: rgba(79, 70, 229, 0.2);
+    color: #FFFFFF;
+}
+
+.hover-primary:hover {
+    color: var(--primary-color) !important;
+}
+
+/* Copy Button Styling */
+.copy-contact-btn {
+    font-size: 0.775rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Dashboard Spending Warning & Overspending Alert Styles
+   ========================================================================== */
+
+/* Spend Alert Banner Base */
+.spend-alert {
+    border-radius: var(--card-radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    border: 1px solid transparent;
+    border-left-width: 6px !important;
+    border-left-style: solid !important;
+    transition: all var(--transition-speed) ease;
+}
+
+/* Warning State (Expenses > 50% up to 100% of Income) */
+.spend-alert--warning {
+    background-color: var(--warning-subtle);
+    border-color: rgba(245, 158, 11, 0.3);
+    border-left-color: var(--warning) !important;
+    color: #92400E;
+}
+
+[data-bs-theme="dark"] .spend-alert--warning {
+    background-color: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #FDE68A;
+}
+
+.spend-alert--warning .spend-alert__title {
+    color: #92400E;
+}
+
+[data-bs-theme="dark"] .spend-alert--warning .spend-alert__title {
+    color: #FBBF24;
+}
+
+.spend-alert--warning .spend-alert__message {
+    color: #78350F;
+}
+
+[data-bs-theme="dark"] .spend-alert--warning .spend-alert__message {
+    color: #F1F5F9;
+}
+
+.spend-alert__icon--warning {
+    color: var(--warning);
+    font-size: 1.85rem;
+}
+
+/* Danger State (Expenses > 100% of Income) */
+.spend-alert--danger {
+    background-color: var(--expense-subtle);
+    border-color: rgba(239, 68, 68, 0.3);
+    border-left-color: var(--danger) !important;
+    color: #991B1B;
+}
+
+[data-bs-theme="dark"] .spend-alert--danger {
+    background-color: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #FECACA;
+}
+
+.spend-alert--danger .spend-alert__title {
+    color: #991B1B;
+}
+
+[data-bs-theme="dark"] .spend-alert--danger .spend-alert__title {
+    color: #F87171;
+}
+
+.spend-alert--danger .spend-alert__message {
+    color: #7F1D1D;
+}
+
+[data-bs-theme="dark"] .spend-alert--danger .spend-alert__message {
+    color: #F1F5F9;
+}
+
+.spend-alert__icon--danger {
+    color: var(--danger);
+    font-size: 1.85rem;
+}
+
+/* Subtle Attention Pulse on Banner Icon (3 iterations then stops) */
+@keyframes spendAlertIconPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.18);
+    }
+}
+
+.spend-alert__icon {
+    display: inline-block;
+    animation: spendAlertIconPulse 1.2s ease-in-out 3;
+}
+
+/* Progress Bar inside Alert */
+.spend-alert__progress {
+    height: 16px;
+    background-color: rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+[data-bs-theme="dark"] .spend-alert__progress {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.spend-alert__progress-bar {
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 16px;
+    border-radius: 20px;
+    transition: width 0.6s ease;
+}
+
+.spend-alert__progress-bar--warning {
+    background-color: var(--warning) !important;
+    color: #78350F;
+}
+
+.spend-alert__progress-bar--danger {
+    background-color: var(--danger) !important;
+    color: #FFFFFF;
+}
+
+.spend-alert__progress-label {
+    color: inherit;
+    font-size: 0.8rem;
+    opacity: 0.95;
+}
+
+/* Dismiss Close Button */
+.spend-alert__close {
+    opacity: 0.7;
+    transition: opacity var(--transition-speed) ease;
+}
+
+.spend-alert__close:hover {
+    opacity: 1;
+}
+
+/* Highlighted Metric Cards with Soft Glow Pulse (3 pulses then stops into static glow) */
+@keyframes cardWarningGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35), 0 4px 18px rgba(245, 158, 11, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.55), 0 8px 25px rgba(245, 158, 11, 0.28);
+    }
+}
+
+@keyframes cardDangerGlow {
+    0%, 100% {
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35), 0 4px 18px rgba(239, 68, 68, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.55), 0 8px 25px rgba(239, 68, 68, 0.28);
+    }
+}
+
+.card-warning {
+    border: 2px solid var(--warning) !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.35), 0 4px 18px rgba(245, 158, 11, 0.15) !important;
+    animation: cardWarningGlow 1.4s ease-in-out 3;
+}
+
+.card-danger {
+    border: 2px solid var(--danger) !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35), 0 4px 18px rgba(239, 68, 68, 0.15) !important;
+    animation: cardDangerGlow 1.4s ease-in-out 3;
+}
+
+/* Accessibility: Prefers Reduced Motion disables animation but preserves static border & glow */
+@media (prefers-reduced-motion: reduce) {
+    .spend-alert__icon {
+        animation: none !important;
+    }
+    .card-warning,
+    .card-danger {
+        animation: none !important;
+    }
 }

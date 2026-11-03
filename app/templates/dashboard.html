@@ -28,6 +28,58 @@
     </form>
 </div>
 
+<!-- Prominent Spending Warning & Overspending Alert Banner -->
+{% if spending_status and spending_status.status in ['warning', 'danger'] %}
+<div id="spendingAlertBanner" class="spend-alert spend-alert--{{ spending_status.status }} mb-4" role="alert" aria-live="assertive">
+    <div class="d-flex align-items-start gap-3">
+        <!-- Attention Icon with Subtle Pulse Animation -->
+        <div class="spend-alert__icon-wrap flex-shrink-0">
+            {% if spending_status.status == 'danger' %}
+                <i class="bi bi-x-octagon-fill spend-alert__icon spend-alert__icon--danger"></i>
+            {% else %}
+                <i class="bi bi-exclamation-triangle-fill spend-alert__icon spend-alert__icon--warning"></i>
+            {% endif %}
+        </div>
+
+        <!-- Alert Content Body -->
+        <div class="flex-grow-1 min-w-0">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+                <h5 class="spend-alert__title fw-bold mb-0">
+                    {% if spending_status.status == 'danger' %}
+                        Overspending alert
+                    {% else %}
+                        Spending warning
+                    {% endif %}
+                </h5>
+                <!-- Dismiss (X) Button (Hides banner until page reload) -->
+                <button type="button" class="btn-close spend-alert__close" id="dismissSpendAlertBtn" aria-label="Close" title="Dismiss banner"></button>
+            </div>
+
+            <p class="spend-alert__message mb-2">
+                {% if spending_status.status == 'danger' %}
+                    Your expenses are higher than your income by {{ currency_symbol }}{{ "{:,.2f}".format(spending_status.over_amount) }} this month.
+                {% else %}
+                    You have spent {{ spending_status.percentage }}% of this month's income ({{ currency_symbol }}{{ "{:,.2f}".format(spending_status.expenses) }} of {{ currency_symbol }}{{ "{:,.2f}".format(spending_status.income) }}).
+                {% endif %}
+            </p>
+
+            <!-- Progress Bar inside Banner -->
+            <div class="spend-alert__progress-wrapper">
+                <div class="d-flex justify-content-between small mb-1 fw-semibold spend-alert__progress-label">
+                    <span>Income Spent</span>
+                    <span>{{ spending_status.percentage }}%</span>
+                </div>
+                <div class="progress spend-alert__progress" role="progressbar" aria-valuenow="{{ spending_status.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar spend-alert__progress-bar spend-alert__progress-bar--{{ spending_status.status }}" style="width: {{ spending_status.capped_percentage }}%;">
+                        {{ spending_status.percentage }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Overspending Alert Banner on Dashboard -->
 {% if budget_overview and budget_overview.alerts %}
     <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 p-3.5">
@@ -103,7 +155,7 @@
 
     <!-- Total Expenses -->
     <div class="col-sm-6 col-xl-3">
-        <div class="custom-card metric-card">
+        <div class="custom-card metric-card {% if spending_status and spending_status.status == 'warning' %}card-warning{% elif spending_status and spending_status.status == 'danger' %}card-danger{% endif %}">
             <div class="metric-header">
                 <span class="metric-label">Monthly Expenses</span>
                 <div class="metric-icon-wrap icon-expense">
@@ -121,7 +173,7 @@
 
     <!-- Monthly Savings & Savings Rate -->
     <div class="col-sm-6 col-xl-3">
-        <div class="custom-card metric-card">
+        <div class="custom-card metric-card {% if spending_status and spending_status.status == 'danger' %}card-danger{% endif %}">
             <div class="metric-header">
                 <span class="metric-label">Monthly Savings</span>
                 <div class="metric-icon-wrap icon-savings">
@@ -129,7 +181,7 @@
                 </div>
             </div>
             <div>
-                <div class="metric-value {% if summary.monthly_savings >= 0 %}text-primary{% else %}text-danger{% endif %}">
+                <div class="metric-value {% if (spending_status and spending_status.status == 'danger') or summary.monthly_savings < 0 %}text-danger{% else %}text-primary{% endif %}">
                     {{ summary.monthly_savings|currency }}
                 </div>
                 <small class="text-muted">

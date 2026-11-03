@@ -8,9 +8,25 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Public Site & Project Contact Information
+# Stored in one single place so contact details can be modified without changing HTML
+SITE_INFO = {
+    'name': 'P. Dileep',
+    'phone': '9959845857',
+    'phone_link': 'tel:+919959845857',
+    'tel_link': 'tel:+919959845857',
+    'email': 'dileepmbu@gmail.com',
+    'email_link': 'mailto:dileepmbu@gmail.com',
+    'initials': 'PD',
+    'role': 'Project contact'
+}
+
 
 class Config:
     """Base application configuration class."""
+    # Site Info
+    SITE_INFO = SITE_INFO
+
     # Flask Core
     SECRET_KEY = os.environ.get('SECRET_KEY', 'default-dev-key-please-change')
     DEBUG = os.environ.get('FLASK_DEBUG', '1') == '1'

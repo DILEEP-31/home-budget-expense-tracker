@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+{% extends "base_public.html" %}
 
 {% block title %}Log In - Home Budget Tracker{% endblock %}
-{% block page_title %}Account Login{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center py-4">
-    <div class="col-md-7 col-lg-5 col-xl-4">
-        <div class="custom-card shadow-sm p-4">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5 col-xl-4">
+            <div class="custom-card shadow-sm p-4">
             <div class="text-center mb-4">
                 <div class="brand-icon mx-auto mb-2" style="width: 48px; height: 48px; font-size: 1.5rem;">
                     <i class="bi bi-wallet2"></i>
@@ -50,9 +50,10 @@
 
             <div class="text-center mt-3 pt-3 border-top small text-secondary">
                 Don't have an account? 
-                <a href="{{ url_for('auth.register') }}" class="fw-semibold text-primary text-decoration-none">Create Account</a>
+                <a href="{{ url_for('main.register') }}" class="fw-semibold text-primary text-decoration-none">Create Account</a>
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

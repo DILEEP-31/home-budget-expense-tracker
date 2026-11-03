@@ -1,0 +1,370 @@
+/* ==========================================================================
+   Home Budget - Public Landing Page Stylesheet
+   Modern, animated fintech landing page design (Indigo & Teal, Poppins font)
+   ========================================================================== */
+
+/* 1. Base Layout (Public - No Sidebar) */
+body.public-layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    overflow-x: hidden;
+}
+
+.public-main-content {
+    flex: 1 0 auto;
+    width: 100%;
+}
+
+/* 2. Public Top Sticky Navbar */
+.public-navbar-wrapper {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+    transition: all var(--transition-speed) ease;
+    z-index: 1030;
+}
+
+[data-bs-theme="dark"] .public-navbar-wrapper {
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom-color: var(--border-color);
+}
+
+.public-navbar {
+    padding: 0.85rem 0;
+}
+
+.public-nav-list {
+    gap: 0.5rem;
+}
+
+.public-nav-link {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.925rem;
+    padding: 0.4rem 0.85rem !important;
+    border-radius: 8px;
+    transition: all var(--transition-speed) ease;
+}
+
+.public-nav-link:hover {
+    color: var(--primary-color);
+    background-color: var(--primary-subtle);
+}
+
+.public-nav-link.active {
+    color: var(--primary-color);
+    background-color: var(--primary-subtle);
+    font-weight: 600;
+}
+
+[data-bs-theme="dark"] .public-nav-link:hover,
+[data-bs-theme="dark"] .public-nav-link.active {
+    background-color: rgba(79, 70, 229, 0.15);
+    color: #FFFFFF;
+}
+
+/* 3. Hero Section & Animated Gradient */
+.landing-hero {
+    position: relative;
+    padding: 4.5rem 0 5rem 0;
+    background: linear-gradient(135deg, #3730A3 0%, #4F46E5 40%, #0D9488 100%);
+    background-size: 200% 200%;
+    animation: heroGradientShift 14s ease infinite;
+    color: #FFFFFF;
+    overflow: hidden;
+}
+
+@keyframes heroGradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Floating Shapes in Hero */
+.hero-floating-shape {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.18;
+    color: #FFFFFF;
+    z-index: 1;
+}
+
+.shape-1 {
+    top: 10%;
+    left: 4%;
+    font-size: 3.5rem;
+    animation: floatGentle 6s ease-in-out infinite;
+}
+
+.shape-2 {
+    bottom: 15%;
+    left: 12%;
+    font-size: 2.75rem;
+    animation: floatReverse 7s ease-in-out infinite;
+}
+
+.shape-3 {
+    top: 18%;
+    right: 6%;
+    font-size: 4rem;
+    animation: floatGentle 8s ease-in-out infinite 1s;
+}
+
+.shape-4 {
+    bottom: 8%;
+    right: 18%;
+    font-size: 3rem;
+    animation: floatReverse 6.5s ease-in-out infinite 0.5s;
+}
+
+@keyframes floatGentle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-16px) rotate(6deg); }
+}
+
+@keyframes floatReverse {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(14px) rotate(-6deg); }
+}
+
+/* Typewriter Headline */
+.typewriter-title {
+    font-size: 2.65rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    min-height: 3.2rem;
+}
+
+@media (max-width: 767.98px) {
+    .typewriter-title {
+        font-size: 2rem;
+        min-height: 4.8rem;
+    }
+}
+
+.typewriter-cursor {
+    display: inline-block;
+    width: 3px;
+    height: 1.1em;
+    background-color: #38BDF8;
+    margin-left: 4px;
+    vertical-align: text-bottom;
+    animation: blinkCursor 0.8s infinite;
+}
+
+@keyframes blinkCursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Pulsing CTA Button */
+.btn-pulse-glow {
+    position: relative;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+    animation: pulseGlowEffect 2.2s infinite;
+}
+
+@keyframes pulseGlowEffect {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 14px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+/* 4. Mock Dashboard Preview Card (Pure HTML/CSS - No Images) */
+.mock-dashboard-card {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: var(--card-radius);
+    color: var(--text-primary);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25), 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 1.75rem;
+    position: relative;
+    z-index: 2;
+    transition: transform var(--transition-speed) ease;
+}
+
+.mock-dashboard-card:hover {
+    transform: translateY(-4px);
+}
+
+.mock-preview-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.25rem 0.65rem;
+    border-radius: 20px;
+    background: linear-gradient(90deg, #4F46E5, #0D9488);
+    color: #FFFFFF;
+}
+
+.mock-metric-box {
+    background-color: #F8FAFC;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+}
+
+[data-bs-theme="dark"] .mock-metric-box {
+    background-color: #1e293b;
+    border-color: #334155;
+}
+
+/* 5. Animated Stats Strip */
+.stats-strip-wrapper {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    padding: 2.25rem 0;
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    z-index: 10;
+}
+
+.stat-counter-box {
+    text-align: center;
+    padding: 0.75rem 1rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+    letter-spacing: -1px;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2rem;
+}
+
+.stat-subtext {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+/* 6. Section Styling */
+.landing-section-pad {
+    padding: 4.5rem 0;
+}
+
+.section-tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.85rem;
+    border-radius: 30px;
+    margin-bottom: 0.75rem;
+}
+
+/* 7. How It Works Steps in About */
+.step-card-mini {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    padding: 1.25rem;
+    height: 100%;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.step-card-mini:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.step-num-bubble {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-teal));
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+/* 8. Scroll Reveal Animations (Vanilla CSS & JS) */
+/* Content is visible by default so it never hides if JS fails */
+.reveal-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* When JS initializes, prepare elements for reveal */
+body.js-enabled .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(28px);
+}
+
+body.js-enabled .reveal-on-scroll.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered Delay Helpers */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* 9. Public Footer */
+.public-footer {
+    background-color: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    padding: 3.5rem 0 2rem 0;
+    color: var(--text-secondary);
+}
+
+/* 10. Accessibility: Prefers Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    body.js-enabled .reveal-on-scroll {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .hero-floating-shape {
+        animation: none !important;
+    }
+
+    .landing-hero {
+        animation: none !important;
+    }
+
+    .btn-pulse-glow {
+        animation: none !important;
+    }
+}

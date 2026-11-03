@@ -6,35 +6,66 @@
         <h5 class="mb-0 fw-semibold text-truncate">{% block page_title %}Dashboard{% endblock %}</h5>
     </div>
 
+    {% if request.endpoint == 'main.home' %}
+    <!-- Public Home Page In-Page Anchor Navigation -->
+    <nav class="home-nav d-none d-md-flex align-items-center gap-1 mx-auto" aria-label="Home page navigation">
+        <a href="#home" class="home-nav-link active">Home</a>
+        <a href="#features" class="home-nav-link">Features</a>
+        <a href="#advantages" class="home-nav-link">Advantages</a>
+        <a href="#contact" class="home-nav-link">Contact</a>
+    </nav>
+    {% endif %}
+
     <div class="d-flex align-items-center gap-2">
         <!-- Theme Dark / Light Mode Toggle Button -->
         <button class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center rounded-circle" id="themeToggleBtn" type="button" aria-label="Toggle Dark Mode" title="Toggle Dark/Light Mode" style="width: 36px; height: 36px;">
             <i class="bi bi-moon-stars" id="themeToggleIcon"></i>
         </button>
 
-        {% if current_user_id %}
-            <span class="d-none d-md-inline-flex align-items-center gap-2 text-secondary small fw-medium">
-                <i class="bi bi-person-circle text-primary fs-5"></i>
-                <span>{{ current_user_name }}</span>
-            </span>
-            <a href="{{ url_for('main.add_transaction') }}" class="btn btn-sm btn-primary-custom d-flex align-items-center gap-1">
-                <i class="bi bi-plus-lg"></i>
-                <span class="d-none d-sm-inline">New Transaction</span>
+        {% if request.endpoint == 'main.home' %}
+            <!-- Open Dashboard Button on Public Home Topbar -->
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-primary-custom d-flex align-items-center gap-1 fw-semibold">
+                <i class="bi bi-speedometer2"></i>
+                <span class="d-none d-sm-inline">Open Dashboard</span>
             </a>
-            <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline m-0">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" title="Log Out">
-                    <i class="bi bi-box-arrow-right"></i>
-                    <span class="d-none d-sm-inline">Logout</span>
-                </button>
-            </form>
+            {% if current_user_id %}
+                <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" title="Log Out">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="d-none d-sm-inline">Logout</span>
+                    </button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-secondary fw-semibold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+                </a>
+            {% endif %}
         {% else %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-primary fw-semibold">
-                <i class="bi bi-box-arrow-in-right me-1"></i> Log In
-            </a>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary-custom fw-semibold">
-                <i class="bi bi-person-plus me-1"></i> Register
-            </a>
+            {% if current_user_id %}
+                <span class="d-none d-md-inline-flex align-items-center gap-2 text-secondary small fw-medium">
+                    <i class="bi bi-person-circle text-primary fs-5"></i>
+                    <span>{{ current_user_name }}</span>
+                </span>
+                <a href="{{ url_for('main.add_transaction') }}" class="btn btn-sm btn-primary-custom d-flex align-items-center gap-1">
+                    <i class="bi bi-plus-lg"></i>
+                    <span class="d-none d-sm-inline">New Transaction</span>
+                </a>
+                <form method="POST" action="{{ url_for('auth.logout') }}" class="d-inline m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" title="Log Out">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="d-none d-sm-inline">Logout</span>
+                    </button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-primary fw-semibold">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Log In
+                </a>
+                <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary-custom fw-semibold">
+                    <i class="bi bi-person-plus me-1"></i> Register
+                </a>
+            {% endif %}
         {% endif %}
     </div>
 </header>

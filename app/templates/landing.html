@@ -1,0 +1,249 @@
+{% extends "base_public.html" %}
+
+{% block title %}Home Budget - Smart Household Expense & Savings Tracker{% endblock %}
+
+{% block content %}
+<!-- 1. Hero Section with Animated Gradient & Floating Icons -->
+<section id="home" class="landing-hero">
+    <!-- Floating Background Shapes & Icons -->
+    <div class="hero-floating-shape shape-1" aria-hidden="true"><i class="bi bi-coin"></i></div>
+    <div class="hero-floating-shape shape-2" aria-hidden="true"><i class="bi bi-wallet2"></i></div>
+    <div class="hero-floating-shape shape-3" aria-hidden="true"><i class="bi bi-bar-chart-fill"></i></div>
+    <div class="hero-floating-shape shape-4" aria-hidden="true"><i class="bi bi-shield-check"></i></div>
+
+    <div class="container-xl position-relative" style="z-index: 5;">
+        <div class="row align-items-center g-5 py-4">
+            <!-- Hero Left: Text & CTA -->
+            <div class="col-lg-7">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-white text-primary fw-semibold small mb-3 shadow-sm">
+                    <i class="bi bi-stars"></i>
+                    <span>Smart Household Budget Management</span>
+                </div>
+
+                <!-- Typewriter Headline -->
+                <h1 class="typewriter-title text-white mb-3">
+                    <span id="typewriterHeadline">Track every rupee. Save more every month.</span><span class="typewriter-cursor"></span>
+                </h1>
+
+                <p class="lead text-white-50 mb-4" style="font-size: 1.1rem; line-height: 1.7; max-width: 580px;">
+                    Take total control of your household finances. Record daily income and expenses, monitor monthly savings, set category budget limits, and gain clear visual insights with intelligent analytics.
+                </p>
+
+                <!-- Hero CTA Buttons -->
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                    {% if current_user_id %}
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-light btn-lg px-4 py-2.5 fw-semibold text-primary rounded-3 shadow-sm btn-pulse-glow">
+                            <i class="bi bi-speedometer2 me-2"></i>Open Dashboard
+                        </a>
+                        <a href="{{ url_for('main.add_transaction') }}" class="btn btn-outline-light btn-lg px-4 py-2.5 fw-semibold rounded-3">
+                            <i class="bi bi-plus-circle me-2"></i>New Transaction
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('main.register') }}" class="btn btn-light btn-lg px-4 py-2.5 fw-semibold text-primary rounded-3 shadow-sm btn-pulse-glow">
+                            <i class="bi bi-person-plus-fill me-2"></i>Get Started (Register)
+                        </a>
+                        <a href="{{ url_for('main.login') }}" class="btn btn-outline-light btn-lg px-4 py-2.5 fw-semibold rounded-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center gap-3 mt-4 pt-2 text-white-50 small">
+                    <div><i class="bi bi-check-circle-fill text-info me-1"></i> 100% Free for Households</div>
+                    <div><i class="bi bi-check-circle-fill text-info me-1"></i> No Credit Card Required</div>
+                </div>
+            </div>
+
+            <!-- Hero Right: Mock Dashboard Card (Pure HTML/CSS - Preview) -->
+            <div class="col-lg-5">
+                <div class="mock-dashboard-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="brand-icon" style="width: 32px; height: 32px; font-size: 1rem;">
+                                <i class="bi bi-speedometer2"></i>
+                            </div>
+                            <span class="fw-bold small text-secondary">Household Budget Overview</span>
+                        </div>
+                        <span class="mock-preview-pill">Preview</span>
+                    </div>
+
+                    <!-- Mini Metrics Row -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div class="mock-metric-box">
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">Monthly Income</small>
+                                <span class="fw-bold text-success fs-6">₹65,000</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="mock-metric-box">
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">Monthly Spending</small>
+                                <span class="fw-bold text-danger fs-6">₹31,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Budget Progress Items -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="fw-medium"><i class="bi bi-cart3 text-success me-1"></i> Groceries</span>
+                            <span class="text-muted">₹3,250 / ₹5,000 <strong class="text-success">(65%)</strong></span>
+                        </div>
+                        <div class="progress" style="height: 6px;" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-success" style="width: 65%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="fw-medium"><i class="bi bi-lightning-charge text-warning me-1"></i> Utilities</span>
+                            <span class="text-muted">₹1,200 / ₹3,000 <strong class="text-primary">(40%)</strong></span>
+                        </div>
+                        <div class="progress" style="height: 6px;" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-primary" style="width: 40%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="fw-medium"><i class="bi bi-film text-danger me-1"></i> Entertainment</span>
+                            <span class="text-warning fw-semibold">₹1,700 / ₹2,000 (85% Caution)</span>
+                        </div>
+                        <div class="progress" style="height: 6px;" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar bg-warning" style="width: 85%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded-3 bg-light border text-center small text-secondary">
+                        <i class="bi bi-shield-check text-primary me-1"></i> Live data safely stored in MySQL database
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 2. Animated Stats Strip (Factual & Verified Numbers) -->
+<section id="statsStrip" class="stats-strip-wrapper">
+    <div class="container-xl">
+        <div class="row g-3">
+            <div class="col-6 col-md-3">
+                <div class="stat-counter-box">
+                    <div class="stat-number">
+                        <span class="counter-value" data-target="15">0</span>
+                    </div>
+                    <div class="stat-label">Categories</div>
+                    <div class="stat-subtext">Predefined Income & Expense</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-counter-box">
+                    <div class="stat-number">
+                        <span class="counter-value" data-target="4">0</span>
+                    </div>
+                    <div class="stat-label">Database Tables</div>
+                    <div class="stat-subtext">Relational MySQL Schema</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-counter-box">
+                    <div class="stat-number">
+                        <span class="counter-value" data-target="100" data-suffix="%">0%</span>
+                    </div>
+                    <div class="stat-label">Server-Side Validation</div>
+                    <div class="stat-subtext">Strict Data Integrity Rules</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-counter-box">
+                    <div class="stat-number">
+                        <span class="counter-value" data-target="2">0</span>
+                    </div>
+                    <div class="stat-label">Delivery Phases</div>
+                    <div class="stat-subtext">Week 1 Core & Week 2 Capstone</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. About The Project & 3-Step "How It Works" -->
+<section id="about" class="landing-section-pad">
+    <div class="container-xl">
+        <div class="row g-5 align-items-center">
+            <!-- About Left: Summary -->
+            <div class="col-lg-5 reveal-on-scroll">
+                <span class="section-tag-badge bg-primary-subtle text-primary">
+                    <i class="bi bi-info-circle"></i> About Home Budget
+                </span>
+                <h2 class="section-title mb-3">Take Charge of Your Household Finances</h2>
+                <p class="text-secondary mb-3" style="font-size: 1.05rem; line-height: 1.75;">
+                    Home Budget is a full-stack personal finance web application built specifically for household budgeting.
+                    It accurately records household income and expenses, categorizes all spending into meaningful groups,
+                    displays real-time monthly savings and balance calculations, and helps users stay within budget with proactive limit alerts.
+                </p>
+                <p class="text-secondary small mb-4">
+                    Designed for clarity, simplicity, and ease of use on both phones and computers, your data is stored safely in a relational database with strict validation.
+                </p>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-lock-fill text-primary fs-5"></i>
+                        <span class="small fw-semibold">Password Protected</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-graph-up-arrow text-success fs-5"></i>
+                        <span class="small fw-semibold">Visual Analytics</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Right: 3 Simple Steps -->
+            <div class="col-lg-7">
+                <div class="row g-3">
+                    <!-- Step 1 -->
+                    <div class="col-md-4 reveal-on-scroll reveal-delay-1">
+                        <div class="step-card-mini">
+                            <div class="step-num-bubble">1</div>
+                            <h6 class="fw-bold mb-2">Register & Login</h6>
+                            <p class="text-secondary small mb-0">Create your private personal account securely to manage your household budget.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="col-md-4 reveal-on-scroll reveal-delay-2">
+                        <div class="step-card-mini">
+                            <div class="step-num-bubble">2</div>
+                            <h6 class="fw-bold mb-2">Add Income & Expenses</h6>
+                            <p class="text-secondary small mb-0">Log your daily transactions with amount, date, and 15 distinct categories.</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="col-md-4 reveal-on-scroll reveal-delay-3">
+                        <div class="step-card-mini">
+                            <div class="step-num-bubble">3</div>
+                            <h6 class="fw-bold mb-2">See Summary & Charts</h6>
+                            <p class="text-secondary small mb-0">Track monthly savings, view budget alert warnings, and analyze spending habits.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. Features Section (What this website offers) Partial -->
+<div class="container-xl reveal-on-scroll">
+    {% include "partials/_features.html" %}
+</div>
+
+<!-- 5. Advantages Section (Why use Home Budget) Partial -->
+<div class="container-xl reveal-on-scroll">
+    {% include "partials/_advantages.html" %}
+</div>
+
+<!-- 6. Contact Section Partial -->
+<div class="container-xl reveal-on-scroll">
+    {% include "partials/_contact.html" %}
+</div>
+{% endblock %}

@@ -32,8 +32,22 @@ main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 def home():
-    """Public landing page."""
-    return render_template('home.html')
+    """Public standalone landing page (no sidebar, no dashboard cards)."""
+    return render_template('landing.html')
+
+
+@main_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    """Public login route mapping to auth.login."""
+    from app.auth.routes import login as auth_login
+    return auth_login()
+
+
+@main_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    """Public register route mapping to auth.register."""
+    from app.auth.routes import register as auth_register
+    return auth_register()
 
 
 @main_bp.route('/dashboard')
@@ -49,8 +63,14 @@ def dashboard():
 
     # Read selected month/year or fallback to current
     try:
-        selected_year = int(request.args.get('year', today.year))
-        selected_month = int(request.args.get('month', today.month))
+        month_year_param = request.args.get('month_year', '').strip()
+        if month_year_param and '-' in month_year_param:
+            parts = month_year_param.split('-')
+            selected_year = int(parts[0])
+            selected_month = int(parts[1])
+        else:
+            selected_year = int(request.args.get('year', today.year))
+            selected_month = int(request.args.get('month', today.month))
         if selected_month < 1 or selected_month > 12:
             selected_month = today.month
     except (ValueError, TypeError):
@@ -72,9 +92,10 @@ def dashboard():
         spending_map = get_category_spending_for_month(user_id, selected_year, selected_month)
         budget_overview = calculate_category_budgets(expense_cats, budgets_map, spending_map)
 
-        # Smart analytics insights
-        from app.services.analytics import get_analytics_insights
+        # Smart analytics insights & macro spending status
+        from app.services.analytics import get_analytics_insights, get_spending_status
         insights_data = get_analytics_insights(user_id, selected_year, selected_month)
+        spending_status = get_spending_status(summary['total_income'], summary['total_expenses'])
     except DatabaseError as e:
         flash("Database temporarily unavailable. Please verify MySQL service is running.", "error")
         return render_template('dashboard.html', error_state=True, currency_symbol=current_app.config['CURRENCY_SYMBOL'])
@@ -94,6 +115,7 @@ def dashboard():
         month_name=month_name,
         budget_overview=budget_overview,
         insights_data=insights_data,
+        spending_status=spending_status,
         currency_symbol=current_app.config['CURRENCY_SYMBOL']
     )
 

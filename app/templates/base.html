@@ -45,13 +45,35 @@
 
             <!-- Footer -->
             <footer class="app-footer">
-                <div>
-                    <strong>Home Budget</strong> &copy; 2026 &bull; College Capstone Project
-                </div>
-                <div>
-                    <span class="badge bg-light text-primary border">Week 2 Capstone Version</span>
+                <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2 w-100">
+                    <div class="d-flex flex-column flex-sm-row align-items-center gap-2 text-center text-sm-start">
+                        <strong class="text-primary">Home Budget</strong>
+                        <span class="d-none d-sm-inline text-muted">&bull;</span>
+                        <span class="text-secondary small">
+                            Project Contact: <strong>{{ site_info.name }}</strong> &bull;
+                            <a href="{{ site_info.tel_link }}" class="text-decoration-none text-secondary hover-primary"><i class="bi bi-telephone me-1"></i>{{ site_info.phone }}</a> &bull;
+                            <a href="{{ site_info.email_link }}" class="text-decoration-none text-secondary hover-primary"><i class="bi bi-envelope me-1"></i>{{ site_info.email }}</a>
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light text-primary border">Week 2 Capstone Version</span>
+                        <span class="text-muted small">&copy; 2026</span>
+                    </div>
                 </div>
             </footer>
+        </div>
+    </div>
+
+    <!-- Global Clipboard Copy Feedback Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <div id="copyToast" class="toast align-items-center text-bg-success border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                    <span id="copyToastMessage">Copied to clipboard!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
         </div>
     </div>
 

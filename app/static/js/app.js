@@ -55,13 +55,135 @@
         });
     }
 
-    // 3. Auto-Dismiss Bootstrap Toasts (4 seconds)
+    // 3. Auto-Dismiss Bootstrap Toasts (4 seconds for flash notifications)
     function initToasts() {
-        const toastElList = [].slice.call(document.querySelectorAll('.toast'));
+        const toastElList = [].slice.call(document.querySelectorAll('.toast:not(#copyToast)'));
         toastElList.forEach(toastEl => {
             const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
             toast.show();
         });
+    }
+
+    // 4. Clipboard Copy Utilities with Button Feedback & Bootstrap Toast
+    function initCopyButtons() {
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.copy-contact-btn');
+            if (!btn) return;
+
+            const textToCopy = btn.getAttribute('data-copy');
+            if (!textToCopy) return;
+
+            function triggerSuccessFeedback() {
+                // Temporary button state change
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check2"></i> <span>Copied!</span>';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-success');
+
+                // Trigger Bootstrap Toast Notification
+                const copyToastEl = document.getElementById('copyToast');
+                if (copyToastEl) {
+                    const msgEl = document.getElementById('copyToastMessage');
+                    if (msgEl) {
+                        msgEl.textContent = `Copied "${textToCopy}" to clipboard!`;
+                    }
+                    const toastInstance = bootstrap.Toast.getOrCreateInstance(copyToastEl, { delay: 3000 });
+                    toastInstance.show();
+                }
+
+                // Revert button appearance after 2 seconds
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-primary');
+                }, 2000);
+            }
+
+            // Clipboard API with robust fallback
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy)
+                    .then(triggerSuccessFeedback)
+                    .catch(() => fallbackCopy(textToCopy, triggerSuccessFeedback));
+            } else {
+                fallbackCopy(textToCopy, triggerSuccessFeedback);
+            }
+        });
+    }
+
+    function fallbackCopy(text, callback) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            if (callback) callback();
+        } catch (err) {
+            console.error('Fallback copy failed', err);
+        }
+        document.body.removeChild(textArea);
+    }
+
+    // 5. Active Anchor Navigation Highlighting for Home Page
+    function initHomeNavSpy() {
+        const navLinks = document.querySelectorAll('.home-nav-link');
+        if (!navLinks.length) return;
+
+        const sections = [
+            document.getElementById('home'),
+            document.getElementById('features'),
+            document.getElementById('advantages'),
+            document.getElementById('contact')
+        ].filter(Boolean);
+
+        if (!sections.length) return;
+
+        // Highlight based on current scroll position
+        function updateActiveLink() {
+            const scrollPos = window.scrollY + 120;
+            let currentSectionId = '';
+
+            for (let i = sections.length - 1; i >= 0; i--) {
+                const sec = sections[i];
+                if (sec.offsetTop <= scrollPos) {
+                    currentSectionId = sec.id;
+                    break;
+                }
+            }
+
+            if (!currentSectionId && sections.length) {
+                currentSectionId = sections[0].id;
+            }
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === `#${currentSectionId}`) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+
+        window.addEventListener('scroll', updateActiveLink, { passive: true });
+        updateActiveLink();
+    }
+
+    // 6. Dismiss Spending Alert Banner Handler (hides until page reload)
+    function initSpendAlertDismiss() {
+        const dismissBtn = document.getElementById('dismissSpendAlertBtn');
+        if (dismissBtn) {
+            dismissBtn.addEventListener('click', function () {
+                const banner = document.getElementById('spendingAlertBanner');
+                if (banner) {
+                    banner.style.display = 'none';
+                }
+            });
+        }
     }
 
     // Initialize on DOM ready
@@ -69,6 +191,9 @@
         initTheme();
         initSubmitGuards();
         initToasts();
+        initCopyButtons();
+        initHomeNavSpy();
+        initSpendAlertDismiss();
 
         // Theme Toggle Button click handler
         const toggleBtn = document.getElementById('themeToggleBtn');

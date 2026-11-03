@@ -31,15 +31,17 @@ def create_app(config_class=Config):
     app.register_blueprint(api_bp)
     app.register_blueprint(reports_bp)
 
-    # Context processor to provide auth state and global variables to all templates
+    # Context processor to provide auth state, site contact info and global variables to all templates
     @app.context_processor
     def inject_globals():
         from flask import session
+        from app.config import SITE_INFO
         return {
             'current_user_id': session.get('user_id'),
             'current_user_name': session.get('user_name'),
             'current_user_email': session.get('user_email'),
-            'currency_symbol': app.config.get('CURRENCY_SYMBOL', '₹')
+            'currency_symbol': app.config.get('CURRENCY_SYMBOL', '₹'),
+            'site_info': app.config.get('SITE_INFO', SITE_INFO)
         }
 
     # Register Custom Jinja Template Filters
